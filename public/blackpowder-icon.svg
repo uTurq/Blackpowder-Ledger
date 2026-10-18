@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="40%" cy="30%" r="85%">
+      <stop offset="0" stop-color="#282118"/>
+      <stop offset="0.58" stop-color="#12110f"/>
+      <stop offset="1" stop-color="#070807"/>
+    </radialGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0cf82"/>
+      <stop offset="0.32" stop-color="#a87631"/>
+      <stop offset="0.68" stop-color="#e0b85f"/>
+      <stop offset="1" stop-color="#6f461d"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#000" flood-opacity=".8"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="88" fill="url(#bg)"/>
+  <path d="M58 91 421 50l35 371L92 460Z" fill="none" stroke="#594328" stroke-width="4" opacity=".45"/>
+  <circle cx="256" cy="256" r="170" fill="#090a09" stroke="url(#brass)" stroke-width="14" filter="url(#shadow)"/>
+  <circle cx="256" cy="256" r="147" fill="none" stroke="#49361e" stroke-width="3" stroke-dasharray="3 10"/>
+  <path d="m256 91 8 21 22 2-17 14 5 22-18-12-19 12 6-22-18-14 23-2Z" fill="#c89948"/>
+  <text x="256" y="302" text-anchor="middle" fill="url(#brass)" font-family="Georgia,serif" font-size="142" font-weight="700" letter-spacing="-8">BL</text>
+  <path d="M164 337h184" stroke="#795529" stroke-width="4"/>
+  <path d="M192 355h128" stroke="#c69a4c" stroke-width="2" opacity=".85"/>
+</svg>

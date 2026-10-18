@@ -1,0 +1,38 @@
+import type { MetadataRoute } from "next";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    id: "/",
+    name: "Blackpowder Ledger",
+    short_name: "Blackpowder",
+    description:
+      "A tactile, offline-ready combat and ammunition companion for the AC-3 Gunsmith.",
+    start_url: "/?source=installed-app",
+    scope: "/",
+    display: "standalone",
+    background_color: "#090a09",
+    theme_color: "#17130e",
+    orientation: "any",
+    categories: ["games", "utilities"],
+    icons: [
+      {
+        src: "/blackpowder-icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/blackpowder-icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/blackpowder-icon-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+  };
+}
