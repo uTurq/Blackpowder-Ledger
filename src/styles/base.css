@@ -1,0 +1,155 @@
+/* Minimal reset. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+button {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis: none;
+  overflow-x: hidden;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+:focus-visible {
+  outline: 2px solid var(--accent-hi, #f0c77a);
+  outline-offset: 3px;
+}
+[role="dialog"]:focus {
+  outline: none;
+}
+::selection {
+  background: color-mix(in srgb, var(--accent, #c7954b) 45%, transparent);
+  color: #fff;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(239, 229, 207, 0.18) transparent;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 400;
+}
+p {
+  margin: 0;
+}
+kbd {
+  font: 600 10px var(--font-mono);
+  padding: 2px 6px;
+  border: 1px solid var(--line-2);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: var(--ink-2);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Shown by index.html until the bundle runs. */
+.boot {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  color: #91866f;
+  font: 15px "IM Fell English", Georgia, serif;
+  font-style: italic;
+  background: radial-gradient(circle at 50% 42%, #2a1d10, #0a0907 62%);
+}
+.boot-mark {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #2a1c0a;
+  font: 26px "Rye", Georgia, serif;
+  background: radial-gradient(circle at 35% 30%, #ffe2a0, #c7954b 45%, #6a4718);
+  box-shadow:
+    0 0 0 3px #1a120a,
+    0 0 0 4px #8a6a35,
+    0 12px 40px #000;
+  animation: boot-breathe 1.6s ease-in-out infinite alternate;
+}
+@keyframes boot-breathe {
+  to {
+    box-shadow:
+      0 0 0 3px #1a120a,
+      0 0 0 4px #c7954b,
+      0 12px 50px #c7954b44;
+  }
+}
+
+/* ---- Motion preferences ---- */
+.motion-reduced *,
+.motion-reduced *::before,
+.motion-reduced *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 80ms !important;
+}
+.motion-off *,
+.motion-off *::before,
+.motion-off *::after {
+  animation: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 80ms !important;
+    scroll-behavior: auto !important;
+  }
+}

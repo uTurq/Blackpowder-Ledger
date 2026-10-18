@@ -5,7 +5,9 @@ import { safeStorage } from "../lib/migrate";
 import type { Batch, LedgerState } from "../lib/types";
 import { money } from "../lib/util";
 import { Cartridge } from "./Cartridge";
+import { Ticker } from "./Ticker";
 import { AppButton, Icon } from "./ui";
+import "./Workshop.css";
 
 export function Workshop({
   state,
@@ -38,58 +40,57 @@ export function Workshop({
   }, [batch, count]);
 
   return (
-    <div className="workshop-layout">
-      <section className="panel glass">
-        <div className="panel-head">
+    <div className="workshop">
+      <section className="panel bench">
+        <header className="panel-head">
           <div>
-            <span className="eyebrow">AMMOSMITH BENCH</span>
+            <span className="eyebrow">Ammosmith bench</span>
             <h1>Build the next encounter.</h1>
-            <p>
-              Queue a batch, inspect the full cost, and replenish the field
-              case.
-            </p>
+            <p>Queue a batch, check the full cost, and restock the field case.</p>
           </div>
-          <button className="gold-chip" onClick={editGold}>
-            <span>AVAILABLE FUNDS</span>
-            <b>{money(state.gold)}</b>
-            <small>Edit coins</small>
+          <button className="purse" onClick={editGold} aria-label={`Available funds ${money(state.gold)}. Edit coins`}>
+            <Icon name="coins" />
+            <span>
+              <small>Available funds</small>
+              <b className="num">
+                <Ticker value={state.gold} /> gp
+              </b>
+            </span>
           </button>
-        </div>
+        </header>
         <div className="craft-grid">
           {state.ammo.map((a) => {
             const qty = batch[a.id] || 0;
             return (
-              <article
-                key={a.id}
-                className={qty ? "active" : ""}
-                style={{ "--ammo": a.color } as CSSProperties}
-              >
-                <Cartridge ammo={a} density={state.theme.density} />
-                <div className="craft-copy">
-                  <span>{money(a.cost)} EACH</span>
-                  <h3>{a.name}</h3>
+              <article key={a.id} className={`crate ${qty ? "active" : ""}`} style={{ "--ammo": a.color } as CSSProperties}>
+                <div className="crate-round">
+                  <Cartridge ammo={a} density={state.theme.density} />
+                  {qty > 0 && <span className="crate-qty num">×{qty}</span>}
+                </div>
+                <div className="crate-copy">
+                  <span className="eyebrow">{money(a.cost)} each</span>
+                  <h3 className="display">{a.name}</h3>
                   <p>{a.effect}</p>
                 </div>
-                <div className="craft-controls">
-                  <button
-                    onClick={() => setQty(a.id, qty - 1)}
-                    disabled={!qty}
-                    aria-label={`One fewer ${a.name}`}
-                  >
-                    −
+                <div className="crate-controls">
+                  <button onClick={() => setQty(a.id, qty - 1)} disabled={!qty} aria-label={`One fewer ${a.name}`}>
+                    <Icon name="minus" />
                   </button>
-                  <b aria-label={`${qty} queued`}>{qty}</b>
+                  <b aria-label={`${qty} queued`} className="num">
+                    {qty}
+                  </b>
                   <button onClick={() => setQty(a.id, qty + 1)} aria-label={`One more ${a.name}`}>
-                    +
+                    <Icon name="plus" />
                   </button>
-                  <button onClick={() => setQty(a.id, qty + 5)} aria-label={`Five more ${a.name}`}>
+                  <button className="wide" onClick={() => setQty(a.id, qty + 5)} aria-label={`Five more ${a.name}`}>
                     +5
                   </button>
                   <button
+                    className="wide"
                     onClick={() => setQty(a.id, maxAffordable(state, batch, a))}
                     aria-label={`As many ${a.name} as you can afford`}
                   >
-                    MAX
+                    Max
                   </button>
                 </div>
               </article>
@@ -97,52 +98,48 @@ export function Workshop({
           })}
         </div>
       </section>
-      <aside className={`panel glass batch-panel ${count ? "" : "empty"}`}>
-        <span className="eyebrow">CRAFTING LEDGER</span>
-        <h2>Current batch</h2>
-        <div className="batch-lines">
-          {state.ammo
-            .filter((a) => batch[a.id])
-            .map((a) => (
-              <div key={a.id}>
-                <span style={{ background: a.color }} />
-                <b>{batch[a.id]}×</b>
-                <p>{a.name}</p>
-                <em>{money((batch[a.id] || 0) * a.cost)}</em>
-              </div>
-            ))}
-          {!count && (
-            <div className="empty-batch">
-              <Icon name="workshop" />
-              <p>Select ammunition from the bench to begin.</p>
+      <aside className={`batch-panel ${count ? "" : "empty"}`}>
+        <div className="receipt">
+          <span className="eyebrow">Crafting ledger</span>
+          <h2 className="display">Current batch</h2>
+          <ol className="batch-lines">
+            {state.ammo
+              .filter((a) => batch[a.id])
+              .map((a) => (
+                <li key={a.id} style={{ "--ammo": a.color } as CSSProperties}>
+                  <b className="num">{batch[a.id]}×</b>
+                  <span>{a.name}</span>
+                  <em className="num">{money((batch[a.id] || 0) * a.cost)}</em>
+                </li>
+              ))}
+            {!count && <li className="empty-batch">Nothing queued. Pick rounds from the bench.</li>}
+          </ol>
+          <div className="batch-total">
+            <div className="stat">
+              <span>Rounds</span>
+              <b>{count}</b>
             </div>
-          )}
+            <div className="stat">
+              <span>Total</span>
+              <b className={cost > state.gold ? "over" : ""}>{money(cost)}</b>
+            </div>
+            <div className="stat">
+              <span>Average</span>
+              <b>{count ? money(cost / count) : "—"}</b>
+            </div>
+          </div>
         </div>
-        <div className="batch-total">
-          <span>
-            <small>ROUNDS</small>
-            <b>{count}</b>
-          </span>
-          <span>
-            <small>TOTAL COST</small>
-            <b className={cost > state.gold ? "over" : ""}>{money(cost)}</b>
-          </span>
-          <span>
-            <small>AVERAGE</small>
-            <b>{count ? money(cost / count) : "—"}</b>
-          </span>
-        </div>
-        <AppButton
-          className="primary craft-confirm"
-          disabled={!count || cost > state.gold}
-          onClick={craft}
-        >
+        <AppButton variant="primary" size="lg" block className="craft-confirm" disabled={!count || cost > state.gold} onClick={craft}>
           <Icon name="workshop" />
           Craft {count || ""} Rounds
         </AppButton>
         <div className="batch-tools">
-          <button onClick={() => setBatch(() => ({}))}>Clear batch</button>
-          <button onClick={repeat}>Repeat last</button>
+          <AppButton size="sm" onClick={() => setBatch(() => ({}))} disabled={!count}>
+            Clear batch
+          </AppButton>
+          <AppButton size="sm" onClick={repeat}>
+            Repeat last
+          </AppButton>
         </div>
       </aside>
     </div>

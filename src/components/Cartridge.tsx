@@ -1,3 +1,4 @@
+import "./Cartridge.css";
 import { useId } from "react";
 
 export type AnimationDensity = "all" | "focused" | "minimal";

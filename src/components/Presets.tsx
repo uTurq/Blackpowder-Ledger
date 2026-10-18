@@ -11,7 +11,8 @@ import type { Commit } from "../lib/store";
 import type { DialogState, LedgerState, Preset } from "../lib/types";
 import { clone, money, uid } from "../lib/util";
 import { Cartridge } from "./Cartridge";
-import { AppButton } from "./ui";
+import "./Presets.css";
+import { AppButton, Icon } from "./ui";
 
 export function Presets({
   state,
@@ -34,44 +35,27 @@ export function Presets({
     .filter((p) => filter === "all" || p.weaponId === filter)
     .sort((a, b) => Number(!!b.favorite) - Number(!!a.favorite));
   return (
-    <section className="panel presets-panel glass">
-      <div className="panel-head">
+    <section className="panel loadouts">
+      <header className="panel-head">
         <div>
-          <span className="eyebrow">MAGAZINE PRESETS</span>
+          <span className="eyebrow">Magazine presets</span>
           <h1>One-tap field loadouts.</h1>
-          <p>
-            See shortages before combat and stage the exact ammunition mix you
-            want.
-          </p>
+          <p>See shortages before combat and stage the exact ammunition mix you want.</p>
         </div>
-        <div className="filter-tabs" role="group" aria-label="Filter by weapon">
-          <button
-            className={filter === "all" ? "active" : ""}
-            aria-pressed={filter === "all"}
-            onClick={() => setFilter("all")}
-          >
+        <div className="segmented well" role="group" aria-label="Filter by weapon">
+          <button aria-pressed={filter === "all"} onClick={() => setFilter("all")}>
             All
           </button>
           {state.weapons.map((w) => (
-            <button
-              className={filter === w.id ? "active" : ""}
-              aria-pressed={filter === w.id}
-              onClick={() => setFilter(w.id)}
-              key={w.id}
-            >
+            <button aria-pressed={filter === w.id} onClick={() => setFilter(w.id)} key={w.id}>
               {w.shortName}
             </button>
           ))}
         </div>
-      </div>
+      </header>
       <div className="preset-grid">
         {!visible.length && (
-          <div className="empty-batch">
-            <p>
-              No loadouts yet. Load a weapon in the Armory and choose Save
-              Preset.
-            </p>
-          </div>
+          <p className="empty-presets">No loadouts yet. Load a weapon in the Armory and choose Save Preset.</p>
         )}
         {visible.map((p) => {
           const w = findWeapon(state, p.weaponId);
@@ -81,38 +65,42 @@ export function Presets({
           const missingCount = missing.reduce((n, x) => n + x.qty, 0);
           const missingCost = missing.reduce((n, x) => n + x.qty * x.ammo.cost, 0);
           return (
-            <article key={p.id} className={short ? "short" : ""}>
-              <button
-                className={`pin ${p.favorite ? "active" : ""}`}
-                aria-label={p.favorite ? `Unpin ${p.name}` : `Pin ${p.name}`}
-                aria-pressed={!!p.favorite}
-                onClick={() =>
-                  commit(
-                    (n) => {
-                      const x = n.presets.find((q) => q.id === p.id);
-                      if (x) x.favorite = !x.favorite;
-                    },
-                    `${p.favorite ? "Unpinned" : "Pinned"} ${p.name}.`,
-                    "preset",
-                  )
-                }
-              >
-                ✦
-              </button>
-              <div className="preset-head">
-                <span>{w.shortName.toUpperCase()}</span>
-                <h2>{p.name}</h2>
-                <p>
-                  {loadedCount(p.slots)}/{w.capacity} rounds ·{" "}
-                  {short ? `Missing ${missingCount} (${money(missingCost)})` : "Ready to load"}
-                </p>
-              </div>
-              <div className="preset-mag">
+            <article key={p.id} className={`loadout ${short ? "short" : ""}`}>
+              <header className="loadout-head">
+                <div>
+                  <span className="eyebrow">{w.shortName}</span>
+                  <h2 className="display">{p.name}</h2>
+                  <p className={short ? "status-short" : "status-ready"}>
+                    <span className="num">
+                      {loadedCount(p.slots)}/{w.capacity}
+                    </span>{" "}
+                    rounds · {short ? `missing ${missingCount} (${money(missingCost)})` : "ready to load"}
+                  </p>
+                </div>
+                <button
+                  className="pin"
+                  aria-label={p.favorite ? `Unpin ${p.name}` : `Pin ${p.name}`}
+                  aria-pressed={!!p.favorite}
+                  onClick={() =>
+                    commit(
+                      (n) => {
+                        const x = n.presets.find((q) => q.id === p.id);
+                        if (x) x.favorite = !x.favorite;
+                      },
+                      `${p.favorite ? "Unpinned" : "Pinned"} ${p.name}.`,
+                      "preset",
+                    )
+                  }
+                >
+                  <Icon name="spark" />
+                </button>
+              </header>
+              <div className="bandolier" aria-label={`${p.name} rounds`}>
                 {p.slots.map((id, i) => {
                   const a = findAmmo(state, id);
                   return (
-                    <span key={i} style={{ "--ammo": a?.color } as CSSProperties}>
-                      {a ? <Cartridge ammo={a} small density={state.theme.density} /> : null}
+                    <span key={i} className={`loop ${a ? "" : "empty"}`} style={{ "--ammo": a?.color } as CSSProperties}>
+                      {a && <Cartridge ammo={a} small density={state.theme.density} />}
                     </span>
                   );
                 })}
@@ -123,17 +111,18 @@ export function Presets({
                   .map((a) => (
                     <span key={a.id} style={{ "--ammo": a.color } as CSSProperties}>
                       <i />
-                      {a.symbol} ×{countIn(p.slots, a.id)}
+                      {a.name} <b className="num">×{countIn(p.slots, a.id)}</b>
                     </span>
                   ))}
               </div>
               <div className="preset-actions">
-                <AppButton className="primary" onClick={() => loadNow(p)} disabled={short}>
+                <AppButton variant="primary" onClick={() => loadNow(p)} disabled={short}>
+                  <Icon name="reload" />
                   Load Now
                 </AppButton>
-                <button onClick={() => adjustPreset(p)}>Adjust</button>
+                <AppButton onClick={() => adjustPreset(p)}>Adjust</AppButton>
                 {short && (
-                  <button
+                  <AppButton
                     disabled={missingCost > state.gold}
                     title={missingCost > state.gold ? "Not enough gold" : undefined}
                     onClick={() =>
@@ -144,21 +133,20 @@ export function Presets({
                       )
                     }
                   >
+                    <Icon name="workshop" />
                     Craft Missing
-                  </button>
+                  </AppButton>
                 )}
-                <button
+                <span className="action-spacer" />
+                <AppButton
+                  size="sm"
+                  variant="ghost"
                   onClick={() =>
                     commit(
                       (n) => {
                         const x = n.presets.find((q) => q.id === p.id);
                         if (!x) return false;
-                        n.presets.push({
-                          ...clone(x),
-                          id: uid("preset"),
-                          name: `${x.name} Copy`,
-                          favorite: false,
-                        });
+                        n.presets.push({ ...clone(x), id: uid("preset"), name: `${x.name} Copy`, favorite: false });
                       },
                       `Duplicated ${p.name}.`,
                       "preset",
@@ -166,8 +154,10 @@ export function Presets({
                   }
                 >
                   Duplicate
-                </button>
-                <button
+                </AppButton>
+                <AppButton
+                  size="sm"
+                  variant="ghost"
                   onClick={() =>
                     setDialog({
                       type: "renamePreset",
@@ -179,9 +169,11 @@ export function Presets({
                   }
                 >
                   Rename
-                </button>
-                <button
-                  className="danger"
+                </AppButton>
+                <AppButton
+                  size="sm"
+                  variant="ghost"
+                  className="delete"
                   onClick={() =>
                     setDialog({
                       type: "deletePreset",
@@ -192,7 +184,7 @@ export function Presets({
                   }
                 >
                   Delete
-                </button>
+                </AppButton>
               </div>
             </article>
           );

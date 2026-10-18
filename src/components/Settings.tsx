@@ -15,7 +15,16 @@ import { AmmunitionSettings } from "./AmmoEditor";
 import type { AnimationDensity } from "./Cartridge";
 import { AppButton, Icon, Range, SettingsHeading, Toggle } from "./ui";
 import { WeaponArt } from "./WeaponArt";
+import "./Settings.css";
 
+const TAB_ICONS: Record<SettingsTab, string> = {
+  appearance: "spark",
+  combat: "combat",
+  animation: "sound",
+  weapons: "armory",
+  ammunition: "presets",
+  data: "shield",
+};
 const TABS: [SettingsTab, string][] = [
   ["appearance", "Appearance"],
   ["combat", "Combat"],
@@ -41,24 +50,19 @@ type SettingsProps = {
 export function Settings(props: SettingsProps) {
   const { tab, setTab } = props;
   return (
-    <section className="settings-shell panel glass">
+    <section className="settings panel">
       <div className="settings-sidebar">
-        <span className="eyebrow">SYSTEM CONFIGURATION</span>
-        <h1>Settings</h1>
+        <span className="eyebrow">System configuration</span>
+        <h1 className="display">Settings</h1>
         <p>
           Shape the ledger to your table, screen, and preferred level of
           spectacle.
         </p>
         <nav aria-label="Settings sections">
           {TABS.map(([id, label]) => (
-            <button
-              key={id}
-              className={tab === id ? "active" : ""}
-              aria-current={tab === id ? "page" : undefined}
-              onClick={() => setTab(id)}
-            >
+            <button key={id} aria-current={tab === id ? "page" : undefined} onClick={() => setTab(id)}>
+              <Icon name={TAB_ICONS[id]} />
               <span>{label}</span>
-              <b aria-hidden="true">›</b>
             </button>
           ))}
         </nav>
@@ -97,11 +101,11 @@ function AppearanceSettings({ state, passive }: SettingsProps) {
           {ENVIRONMENTS.map(([id, label]) => (
             <button
               key={id}
-              className={`${state.theme.environment === id ? "active" : ""} env-card-${id}`}
+              className="env-card"
               aria-pressed={state.theme.environment === id}
               onClick={() => setTheme("environment", id)}
             >
-              <span />
+              <span className={`env-thumb env-${id}`} />
               <b>{label}</b>
             </button>
           ))}
@@ -109,31 +113,35 @@ function AppearanceSettings({ state, passive }: SettingsProps) {
       </div>
       <div className="setting-block">
         <h3>Panel material</h3>
-        <div className="choice-row material-choices">
+        <div className="material-grid">
           {PANEL_MATERIALS.map(([id, label]) => (
             <button
               key={id}
-              className={`${state.theme.material === id ? "active" : ""} material-swatch-${id}`}
+              className="material-card"
               aria-pressed={state.theme.material === id}
               onClick={() => setTheme("material", id)}
             >
-              {label}
+              <span className={`material-${id} swatch-frame`}>
+                <span className="panel swatch-surface" />
+              </span>
+              <b>{label}</b>
             </button>
           ))}
         </div>
       </div>
       <div className="setting-block">
         <h3>Accent metal</h3>
-        <div className="swatches">
+        <div className="accent-grid">
           {Object.entries(ACCENTS).map(([id, colors]) => (
             <button
               key={id}
-              className={state.theme.accent === id ? "active" : ""}
+              className="accent-swatch"
               aria-pressed={state.theme.accent === id}
               onClick={() => setTheme("accent", id)}
+              style={{ "--sw": colors[0], "--sw-hi": colors[1] } as React.CSSProperties}
             >
-              <i style={{ background: colors[0] }} />
-              <span>{id}</span>
+              <i />
+              <span>{capitalize(id)}</span>
             </button>
           ))}
         </div>
@@ -229,7 +237,7 @@ function CombatSettings({ state, passive }: SettingsProps) {
                 ["misc", "Miscellaneous"],
               ] as const
             ).map(([key, label]) => (
-              <label key={key}>
+              <label key={key} className="field">
                 {label}
                 <input
                   type="number"
@@ -239,7 +247,7 @@ function CombatSettings({ state, passive }: SettingsProps) {
                 />
               </label>
             ))}
-            <label>
+            <label className="field">
               Roll mode
               <select
                 value={state.roller.mode}
@@ -279,7 +287,7 @@ function AnimationSettings({ state, passive }: SettingsProps) {
       />
       <div className="setting-block">
         <h3>Cartridge animation density</h3>
-        <div className="segmented">
+        <div className="segmented well">
           {(
             [
               ["all", "All Rounds"],
@@ -289,7 +297,6 @@ function AnimationSettings({ state, passive }: SettingsProps) {
           ).map(([id, label]) => (
             <button
               key={id}
-              className={state.theme.density === id ? "active" : ""}
               aria-pressed={state.theme.density === id}
               onClick={() => setTheme("density", id)}
             >
@@ -300,11 +307,10 @@ function AnimationSettings({ state, passive }: SettingsProps) {
       </div>
       <div className="setting-block">
         <h3>Motion profile</h3>
-        <div className="segmented">
+        <div className="segmented well">
           {(["full", "reduced", "off"] as Motion[]).map((id) => (
             <button
               key={id}
-              className={state.theme.motion === id ? "active" : ""}
               aria-pressed={state.theme.motion === id}
               onClick={() => setTheme("motion", id)}
             >
@@ -361,11 +367,11 @@ function WeaponSettings({ state, passive }: SettingsProps) {
       />
       <div className="weapon-editor-grid">
         {state.weapons.map((w) => (
-          <article key={w.id}>
+          <article key={w.id} className="weapon-card well">
             <div className="weapon-editor-stage">
               <WeaponArt weapon={w} />
             </div>
-            <label>
+            <label className="field">
               Display name
               <input
                 value={w.name}
@@ -377,7 +383,7 @@ function WeaponSettings({ state, passive }: SettingsProps) {
               />
             </label>
             <div className="two-fields">
-              <label>
+              <label className="field">
                 Metal
                 <select
                   value={w.finish}
@@ -394,7 +400,7 @@ function WeaponSettings({ state, passive }: SettingsProps) {
                   <option value="copper">Copper</option>
                 </select>
               </label>
-              <label>
+              <label className="field">
                 Stock
                 <select
                   value={w.stock}
@@ -412,7 +418,7 @@ function WeaponSettings({ state, passive }: SettingsProps) {
               </label>
             </div>
             {state.elementalUnlocked && (
-              <label>
+              <label className="field">
                 Elemental Chamber
                 <select
                   value={w.element}
@@ -453,21 +459,23 @@ function DataSettings({
         title="Data & saves"
         text="Your ledger saves automatically on this device. Export a file before moving browsers or computers."
       />
-      <div className="save-status">
-        <Icon name="lock" />
+      <div className="info-card well save-status">
+        <span className="info-mark ok" aria-hidden="true">
+          <Icon name="shield" />
+        </span>
         <div>
-          <span>AUTOSAVE HEALTHY</span>
-          <h3>Last saved {timeAgo(state.savedAt)}</h3>
+          <span className="eyebrow">Autosave healthy</span>
+          <h3 className="display">Last saved {timeAgo(state.savedAt)}</h3>
           <p>Stored locally on this device.</p>
         </div>
       </div>
-      <div className={`install-status ${pwaStatus}`}>
-        <div className="install-mark" aria-hidden="true">
+      <div className={`info-card well install-status ${pwaStatus}`}>
+        <span className="info-mark" aria-hidden="true">
           BL
-        </div>
+        </span>
         <div>
-          <span>OFFLINE FIELD KIT</span>
-          <h3>
+          <span className="eyebrow">Offline field kit</span>
+          <h3 className="display">
             {pwaStatus === "installed"
               ? "Installed on this device"
               : "Install Blackpowder Ledger"}
@@ -482,7 +490,7 @@ function DataSettings({
         </div>
         {pwaStatus !== "installed" && (
           <AppButton
-            className={pwaStatus === "available" ? "primary" : ""}
+            variant={pwaStatus === "available" ? "primary" : undefined}
             onClick={installPwa}
           >
             <Icon name="download" />
@@ -491,7 +499,7 @@ function DataSettings({
         )}
       </div>
       <div className="data-actions">
-        <AppButton className="primary" onClick={exportSave}>
+        <AppButton variant="primary" onClick={exportSave}>
           <Icon name="download" />
           Export Portable Save
         </AppButton>
@@ -500,16 +508,16 @@ function DataSettings({
           Import Save
         </AppButton>
       </div>
-      <div className="danger-zone">
+      <div className="info-card danger-zone">
         <div>
-          <h3>Reset the ledger</h3>
+          <h3 className="display">Reset the ledger</h3>
           <p>
             Restore factory ammunition, weapons, presets, gold, and appearance.
             The reset can be undone until you close the page.
           </p>
         </div>
         <AppButton
-          className="danger"
+          variant="danger"
           onClick={() =>
             setDialog({
               type: "reset",

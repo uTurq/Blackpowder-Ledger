@@ -1,0 +1,191 @@
+.loadouts {
+  padding-bottom: 22px;
+}
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 14px;
+  padding: 18px 22px 0;
+}
+.empty-presets {
+  grid-column: 1 / -1;
+  padding: 30px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  color: var(--ink-3);
+  font: italic var(--fs-lg) var(--font-display);
+  text-align: center;
+}
+.loadout {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
+    rgba(0, 0, 0, 0.24);
+  animation: card-in var(--dur-3) var(--ease-out) both;
+}
+.loadout.short {
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--line));
+}
+.loadout-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.loadout-head h2 {
+  margin: 2px 0 4px;
+  font-size: var(--fs-2xl);
+  line-height: 1.1;
+}
+.loadout-head p {
+  font-size: var(--fs-sm);
+}
+.status-ready {
+  color: var(--success);
+}
+.status-short {
+  color: var(--danger-ink);
+}
+.pin {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink-4);
+  transition:
+    color var(--dur-2),
+    transform var(--dur-2) var(--ease-spring);
+}
+.pin:hover {
+  color: var(--ink-2);
+}
+.pin[aria-pressed="true"] {
+  color: var(--accent-hi);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+.pin:active {
+  transform: scale(0.85) rotate(-20deg);
+}
+
+/* A leather bandolier with a loop for every round. */
+.bandolier {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 2px;
+  padding: 14px 12px 0;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.25) 52% 54%, transparent 54%),
+    var(--tex-pebble),
+    linear-gradient(180deg, #5a3a22, #3a2414 60%, #2a190d);
+  background-blend-mode: normal, multiply, normal;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 210, 160, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+    0 8px 18px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+.loop {
+  position: relative;
+  height: 84px;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 4px;
+}
+/* The strap sits over the lower half of each round, so it is held, not perched. */
+.loop::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  left: -1px;
+  right: -1px;
+  bottom: 8px;
+  height: 30px;
+  border-radius: 4px 4px 2px 2px;
+  background:
+    linear-gradient(180deg, rgba(255, 210, 160, 0.16), transparent 30%),
+    linear-gradient(180deg, #6a462a, #4a2e19);
+  border-top: 1px dashed rgba(220, 170, 120, 0.4);
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.35);
+}
+.loop .cartridge {
+  width: 30px;
+  height: 68px;
+  margin-bottom: 4px;
+}
+.loop.empty::before {
+  content: "";
+  position: absolute;
+  bottom: 30px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+}
+.preset-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.preset-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--ammo) 35%, var(--line));
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+.preset-key i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ammo);
+  box-shadow: 0 0 6px var(--ammo);
+}
+.preset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.action-spacer {
+  flex: 1;
+}
+.preset-actions .delete {
+  --btn-ink: var(--danger-ink);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (max-width: 760px) {
+  .preset-grid {
+    grid-template-columns: 1fr;
+    padding: 12px 12px 0;
+  }
+  .loadout {
+    padding: 14px;
+  }
+  .loop {
+    height: 70px;
+  }
+  .loop .cartridge {
+    width: 22px;
+    height: 50px;
+  }
+  .action-spacer {
+    display: none;
+  }
+}

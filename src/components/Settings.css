@@ -1,0 +1,543 @@
+.settings {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 640px;
+}
+.settings-sidebar {
+  padding: 24px 16px;
+  border-right: 1px solid var(--line);
+}
+.settings-sidebar h1 {
+  margin-top: 6px;
+  font-size: var(--fs-3xl);
+}
+.settings-sidebar > p {
+  margin: 8px 0 18px;
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
+}
+.settings-sidebar nav {
+  display: grid;
+  gap: 4px;
+}
+.settings-sidebar nav button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  color: var(--ink-2);
+  font: 600 var(--fs-sm) var(--font-ui);
+  text-align: left;
+  transition:
+    background var(--dur-2),
+    color var(--dur-2);
+}
+.settings-sidebar nav .icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ink-3);
+}
+.settings-sidebar nav button:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.04);
+}
+.settings-sidebar nav button[aria-current="page"] {
+  color: var(--accent-hi);
+  background: linear-gradient(90deg, var(--accent-soft), transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.settings-sidebar nav button[aria-current="page"] .icon {
+  color: var(--accent-hi);
+}
+.settings-content {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  padding: 26px 28px 30px;
+  animation: view-in var(--dur-3) var(--ease-out);
+}
+.settings-heading h2 {
+  margin-top: 4px;
+  font-size: var(--fs-3xl);
+}
+.settings-heading p {
+  margin-top: 6px;
+  color: var(--ink-3);
+}
+.setting-block {
+  display: grid;
+  gap: 12px;
+}
+.setting-block h3 {
+  font: var(--fs-xs) var(--font-engrave);
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+
+/* Range and toggle rows */
+.setting-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.setting-copy b {
+  display: block;
+  font-size: var(--fs-md);
+}
+.setting-copy small {
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+}
+.range-setting output {
+  font: 650 var(--fs-md) var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-hi);
+}
+.range-setting .range {
+  grid-column: 1 / -1;
+}
+
+/* Environment postcards */
+.environment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.env-card {
+  display: grid;
+  gap: 8px;
+  padding: 6px 6px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.2);
+  font: 600 var(--fs-xs) var(--font-ui);
+  color: var(--ink-2);
+  transition:
+    border-color var(--dur-2),
+    transform var(--dur-2) var(--ease-spring);
+}
+.env-card:hover {
+  transform: translateY(-2px);
+}
+.env-card[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent-hi);
+  box-shadow: 0 0 0 1px var(--accent), 0 8px 20px var(--accent-soft);
+}
+.env-thumb {
+  height: 80px;
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.env-desert {
+  background:
+    radial-gradient(circle at 66% 70%, #ffe0a3 0 8%, rgba(255, 170, 90, 0.5) 14%, transparent 40%),
+    linear-gradient(180deg, #100c1e, #3a1f3d 35%, #9a3f29 62%, #ec9a52 76%, #3e1c22 77%, #1e0f12);
+}
+.env-moon {
+  background:
+    radial-gradient(circle at 72% 30%, #f1eedf 0 10%, rgba(220, 230, 255, 0.25) 16%, transparent 34%),
+    linear-gradient(180deg, #03060f, #0d1a36 60%, #14213c 70%, #060b17);
+}
+.env-workshop {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 207, 122, 0.55), transparent 50%),
+    repeating-linear-gradient(90deg, #2a1b0f 0 18px, #170e07 18px 20px);
+}
+.env-forge {
+  background:
+    radial-gradient(ellipse at 70% 75%, #fff0b0 0 6%, #ff9a36 18%, #c23b12 34%, transparent 58%),
+    #120a07;
+}
+.env-camp {
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(255, 176, 85, 0.85), rgba(200, 80, 27, 0.3) 40%, transparent 65%),
+    linear-gradient(180deg, #05070d, #151c2b);
+}
+.env-arcane {
+  background:
+    radial-gradient(circle at 50% 50%, transparent 30%, rgba(154, 134, 255, 0.45) 31% 33%, transparent 34%),
+    radial-gradient(circle, #2a1650, #06040e 75%);
+}
+.env-plain {
+  background: radial-gradient(circle, #1b1915, #070605);
+}
+
+/* Material samples render the real panel recipe. */
+.material-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+.material-card {
+  display: grid;
+  gap: 8px;
+  padding: 6px 6px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  font: 600 var(--fs-xs) var(--font-ui);
+  color: var(--ink-2);
+  transition: border-color var(--dur-2);
+}
+.material-card[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent-hi);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.swatch-frame {
+  display: block;
+}
+.swatch-surface {
+  display: block;
+  height: 60px;
+  border-radius: 8px;
+  --panel-alpha: 1;
+}
+
+/* Accent metals as polished discs. */
+.accent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.accent-swatch {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 76px;
+  padding: 8px 0;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font: 600 var(--fs-2xs) var(--font-ui);
+  color: var(--ink-2);
+}
+.accent-swatch i {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff8e6, var(--sw-hi) 25%, var(--sw) 60%, color-mix(in srgb, var(--sw) 50%, #000));
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.5),
+    0 6px 12px rgba(0, 0, 0, 0.5);
+  transition: transform var(--dur-2) var(--ease-spring);
+}
+.accent-swatch:hover i {
+  transform: scale(1.08);
+}
+.accent-swatch[aria-pressed="true"] {
+  border-color: var(--accent-line);
+  color: var(--accent-hi);
+}
+.accent-swatch[aria-pressed="true"] i {
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.5),
+    0 0 0 5px var(--sw),
+    0 0 18px color-mix(in srgb, var(--sw) 60%, transparent);
+}
+
+.number-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.rules-card {
+  padding: 16px 18px;
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.22);
+}
+.rules-card ul {
+  display: grid;
+  gap: 6px;
+  font: var(--fs-md) var(--font-display);
+}
+.rules-card li::before {
+  content: "✦ ";
+  color: var(--accent);
+}
+.rules-card small {
+  color: var(--ink-3);
+}
+
+/* Weapons */
+.weapon-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.weapon-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+.weapon-editor-stage {
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: radial-gradient(ellipse at 50% 20%, rgba(255, 236, 200, 0.1), transparent 70%), #080706;
+}
+.two-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Ammunition catalog */
+.ammo-editor-list {
+  display: grid;
+  gap: 8px;
+}
+.ammo-entry {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ammo);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+.ammo-entry summary {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.ammo-entry summary::-webkit-details-marker {
+  display: none;
+}
+.ammo-entry summary b {
+  display: block;
+  font-size: var(--fs-md);
+}
+.ammo-entry summary small {
+  display: block;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ammo-entry summary em {
+  font-style: normal;
+  font-size: 22px;
+  color: var(--ink-3);
+  transition: transform var(--dur-2);
+}
+.ammo-entry[open] summary em {
+  transform: rotate(90deg);
+}
+.ammo-entry[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+.ammo-editor {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 18px;
+  padding: 16px;
+  animation: view-in var(--dur-3) var(--ease-out);
+}
+.visual-preview-suite {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.hero-round-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.hero-round-preview > div {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 190px;
+  padding: 14px 6px 10px;
+  border-radius: var(--r-md);
+  background:
+    radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--ammo) 16%, transparent), transparent 70%),
+    #080706;
+}
+.hero-round-preview > div:last-child {
+  background: linear-gradient(180deg, #e9dcc0, #c9b58f);
+}
+.hero-round-preview .cartridge {
+  width: 58px;
+  height: 130px;
+}
+.hero-round-preview span {
+  font: var(--fs-2xs) var(--font-engrave);
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+}
+.hero-round-preview > div:last-child span {
+  color: #5a4426;
+}
+.visual-preview-suite p {
+  color: var(--ink-3);
+  font: italic var(--fs-sm) var(--font-display);
+}
+.visual-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+.visual-fields .wide {
+  grid-column: 1 / -1;
+}
+.visual-divider {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  font: var(--fs-xs) var(--font-engrave);
+  letter-spacing: 0.14em;
+  color: var(--accent-hi);
+}
+.visual-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent-line), transparent);
+}
+.ammo-editor-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+.add-ammo {
+  justify-self: start;
+}
+
+/* Data & saves */
+.info-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+}
+.info-card h3 {
+  margin: 2px 0;
+  font-size: var(--fs-xl);
+}
+.info-card p {
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
+}
+.info-mark {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #24170a;
+  font: 16px var(--font-wood);
+  background: radial-gradient(circle at 35% 30%, #fff1c8, var(--accent) 50%, var(--accent-lo));
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5);
+}
+.info-mark.ok {
+  color: #0e2a0e;
+  background: radial-gradient(circle at 35% 30%, #e6ffd8, var(--success) 55%, #2c5a2a);
+}
+.info-mark .icon {
+  width: 24px;
+  height: 24px;
+}
+.data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.danger-zone {
+  grid-template-columns: minmax(0, 1fr) auto;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+}
+
+@media (max-width: 1100px) {
+  .settings {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .ammo-editor {
+    grid-template-columns: 1fr;
+  }
+  .hero-round-preview {
+    max-width: 320px;
+  }
+}
+@media (max-width: 760px) {
+  .settings {
+    display: block;
+  }
+  .settings-sidebar {
+    padding: 16px 12px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .settings-sidebar h1 {
+    font-size: var(--fs-2xl);
+  }
+  .settings-sidebar > p {
+    display: none;
+  }
+  .settings-sidebar nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 10px;
+  }
+  .settings-sidebar nav button {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+    min-height: 58px;
+    font-size: var(--fs-2xs);
+    text-align: center;
+  }
+  .settings-sidebar nav button[aria-current="page"] {
+    box-shadow: inset 0 -3px 0 var(--accent);
+    background: linear-gradient(0deg, var(--accent-soft), transparent);
+  }
+  .settings-content {
+    padding: 18px 14px 24px;
+  }
+  .settings-heading h2 {
+    font-size: var(--fs-2xl);
+  }
+  .environment-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .material-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .number-fields,
+  .visual-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .weapon-editor-grid {
+    grid-template-columns: 1fr;
+  }
+  .info-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .info-card .btn {
+    grid-column: 1 / -1;
+  }
+  .danger-zone {
+    grid-template-columns: 1fr;
+  }
+}

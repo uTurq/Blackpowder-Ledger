@@ -1,8 +1,9 @@
 import { VIEWS } from "../lib/defaults";
 import { findAmmo, loadedCount } from "../lib/ledger";
 import type { LedgerState, View, Weapon } from "../lib/types";
-import { capitalize, money } from "../lib/util";
-import { Icon } from "./ui";
+import { capitalize } from "../lib/util";
+import { Ticker } from "./Ticker";
+import { AppButton, Icon } from "./ui";
 
 export function Topbar({
   state,
@@ -27,14 +28,15 @@ export function Topbar({
   const totalLoaded = state.weapons.reduce((n, w) => n + loadedCount(w.slots), 0);
   const totalReserve = state.ammo.reduce((n, a) => n + a.reserve, 0);
   return (
-    <header className="topbar glass">
+    <header className="topbar panel">
       <div className="brand">
-        <div className="brand-lock">
-          <span>BL</span>
+        <div className="medallion" aria-hidden="true">
+          BL
         </div>
-        <div>
-          <p>AC-3 FIELD SYSTEM</p>
+        <div className="brand-text">
+          <span className="eyebrow">Blackpowder Ledger</span>
           <input
+            className="brand-name"
             aria-label="Character or armory name"
             value={state.characterName}
             onChange={(e) => rename(e.target.value)}
@@ -44,63 +46,64 @@ export function Topbar({
       <div className="top-stats">
         {state.combatMode ? (
           <>
-            <div>
-              <span>ACTIVE WEAPON</span>
+            <div className="stat">
+              <span>Weapon</span>
               <b>{weapon.shortName}</b>
             </div>
-            <div>
-              <span>LOADED</span>
+            <div className="stat">
+              <span>Loaded</span>
               <b>
-                {loadedCount(weapon.slots)}
+                <Ticker value={loadedCount(weapon.slots)} />
                 <small> / {weapon.capacity}</small>
               </b>
             </div>
-            <div>
-              <span>NEXT ROUND</span>
+            <div className="stat">
+              <span>Next round</span>
               <b style={{ color: selectedAmmo?.color }}>{selectedAmmo?.name || "—"}</b>
             </div>
           </>
         ) : (
           <>
-            <div className="gold-stat-wrap">
-              <button className="gold-stat-button" onClick={editGold}>
-                <span>GOLD · EDIT</span>
-                <b>{money(state.gold)}</b>
-              </button>
+            <button className="stat gold-stat" onClick={editGold} aria-label={`Gold: ${state.gold} gp. Edit`}>
+              <span>Gold</span>
+              <b>
+                <Ticker value={state.gold} />
+                <small> gp</small>
+              </b>
+            </button>
+            <div className="stat">
+              <span>Reserve</span>
+              <b>
+                <Ticker value={totalReserve} />
+              </b>
             </div>
-            <div>
-              <span>RESERVE</span>
-              <b>{totalReserve}</b>
-            </div>
-            <div>
-              <span>LOADED</span>
-              <b>{totalLoaded}</b>
+            <div className="stat">
+              <span>Loaded</span>
+              <b>
+                <Ticker value={totalLoaded} />
+              </b>
             </div>
           </>
         )}
       </div>
       <div className="top-actions">
         {/* Phones only: the bottom activity bar gives way to the fire controls there. */}
-        <button className="quiet-icon history-top" onClick={openHistory} aria-label="Open activity history">
+        <AppButton className="history-top" onClick={openHistory} aria-label="Open activity history">
           <Icon name="history" />
-        </button>
-        <button
-          className="quiet-icon undo-top"
-          onClick={undo}
-          disabled={!canUndo}
-          aria-label="Undo last action"
-        >
+        </AppButton>
+        <AppButton className="undo-top" onClick={undo} disabled={!canUndo} aria-label="Undo last action">
           <Icon name="undo" />
           <span>Undo</span>
-        </button>
-        <button
-          className={`combat-switch ${state.combatMode ? "active" : ""}`}
+        </AppButton>
+        <AppButton
+          className="combat-toggle"
           aria-pressed={state.combatMode}
+          aria-label={state.combatMode ? "Exit Combat Mode" : "Enter Combat Mode"}
           onClick={toggleCombat}
         >
           <Icon name="combat" />
-          {state.combatMode ? "Exit Combat" : "Combat Mode"}
-        </button>
+          <span>{state.combatMode ? "Exit Combat" : "Combat Mode"}</span>
+        </AppButton>
       </div>
     </header>
   );
@@ -108,14 +111,9 @@ export function Topbar({
 
 export function MainNav({ view, go }: { view: View; go: (v: View) => void }) {
   return (
-    <nav className="main-nav glass" aria-label="Primary navigation">
+    <nav className="main-nav panel" aria-label="Primary navigation">
       {VIEWS.map((v) => (
-        <button
-          key={v}
-          className={view === v ? "active" : ""}
-          aria-current={view === v ? "page" : undefined}
-          onClick={() => go(v)}
-        >
+        <button key={v} aria-current={view === v ? "page" : undefined} onClick={() => go(v)}>
           <Icon name={v} />
           <span>{v === "presets" ? "Loadouts" : capitalize(v)}</span>
         </button>

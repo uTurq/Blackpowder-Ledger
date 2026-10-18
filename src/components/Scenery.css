@@ -1,0 +1,153 @@
+.scenery {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-scene);
+  overflow: hidden;
+  pointer-events: none;
+  background: #070605;
+}
+.scenery-art {
+  position: absolute;
+  inset: calc(var(--scene-blur) * -2);
+  opacity: var(--bg-intensity);
+  filter: blur(var(--scene-blur)) saturate(0.92);
+}
+.scenery-art svg {
+  width: 100%;
+  height: 100%;
+}
+.scenery-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 40%, transparent 35%, rgba(0, 0, 0, calc(0.35 + var(--vignette) * 0.65)) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.25), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.55));
+}
+
+/* Slow ambient life in each scene. */
+.stars circle {
+  fill: #e9efff;
+  animation: twinkle 4.5s ease-in-out infinite alternate;
+}
+.sun-glow,
+.lamp-glow {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: breathe 7s ease-in-out infinite alternate;
+}
+.forge-glow,
+.fire-glow {
+  transform-origin: 50% 100%;
+  transform-box: fill-box;
+  animation: fire-breathe 2.4s ease-in-out infinite alternate;
+}
+.rune-circle {
+  transform-origin: 800px 430px;
+  animation: rune-turn 160s linear infinite;
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  opacity: var(--atmosphere);
+}
+.particles i {
+  position: absolute;
+  left: var(--x);
+  bottom: -12px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  animation: rise var(--dur) linear var(--delay) infinite;
+}
+.particles.dust i {
+  background: rgba(255, 226, 180, 0.35);
+  animation-name: drift;
+  bottom: auto;
+  top: 30%;
+  left: -10px;
+  animation-delay: var(--delay);
+  translate: 0 calc(var(--size) * 60);
+}
+.particles.ember i {
+  background: radial-gradient(circle, #fff1b8, #ff8a2a 60%, transparent 70%);
+  box-shadow: 0 0 8px #ff8a2a;
+}
+.particles.mote i {
+  background: radial-gradient(circle, #e6deff, #8f7aff 60%, transparent 70%);
+  box-shadow: 0 0 10px #8f7aff;
+  animation-name: float-up;
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes breathe {
+  to {
+    transform: scale(1.06);
+    opacity: 0.62;
+  }
+}
+@keyframes fire-breathe {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  40% {
+    transform: scale(1.04, 1.07);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(0.98, 1.02);
+    opacity: 0.74;
+  }
+}
+@keyframes rune-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rise {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(40px, -95vh);
+    opacity: 0;
+  }
+}
+@keyframes float-up {
+  0% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-30px, -80vh) scale(1.1);
+    opacity: 0;
+  }
+}
+@keyframes drift {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(110vw, -18vh);
+    opacity: 0;
+  }
+}

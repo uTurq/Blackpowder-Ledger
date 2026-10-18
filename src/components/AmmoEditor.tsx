@@ -82,7 +82,7 @@ export function AmmunitionSettings({
         ))}
       </div>
       <AppButton
-        className="primary add-ammo"
+        variant="primary" className="add-ammo"
         onClick={() =>
           setDialog({
             type: "newAmmo",
@@ -140,7 +140,7 @@ function AmmoEditor({
   );
 
   return (
-    <details>
+    <details className="ammo-entry" style={{ "--ammo": a.color } as React.CSSProperties}>
       <summary>
         <Cartridge ammo={a} small density={state.theme.density} />
         <span>
@@ -149,7 +149,7 @@ function AmmoEditor({
             {money(a.cost)} · {a.effect}
           </small>
         </span>
-        <em>›</em>
+        <em aria-hidden="true">›</em>
       </summary>
       <div className="ammo-editor visual-workshop">
         <div className="visual-preview-suite">
@@ -169,7 +169,7 @@ function AmmoEditor({
           </p>
         </div>
         <div className="visual-fields">
-          <label>
+          <label className="field">
             Name
             <input
               value={a.name}
@@ -180,7 +180,7 @@ function AmmoEditor({
               }
             />
           </label>
-          <label>
+          <label className="field">
             Crafting cost
             <input
               type="number"
@@ -194,7 +194,7 @@ function AmmoEditor({
               }
             />
           </label>
-          <label className="wide">
+          <label className="field wide">
             Rules reminder
             <textarea
               value={a.effect}
@@ -210,7 +210,7 @@ function AmmoEditor({
             <Fragment key={group.title}>
               <div className="visual-divider">{group.title}</div>
               {i === 0 && (
-                <label>
+                <label className="field">
                   Appearance preset
                   <select
                     value={a.visual.preset}
@@ -237,7 +237,7 @@ function AmmoEditor({
               {group.fields.map(select)}
             </Fragment>
           ))}
-          <label>
+          <label className="field">
             Accent / effect color
             <input
               type="color"
@@ -246,7 +246,7 @@ function AmmoEditor({
             />
           </label>
           {MARKING_FIELDS.map(select)}
-          <label>
+          <label className="field">
             Custom mark
             <input
               maxLength={3}
@@ -280,7 +280,7 @@ function AmmoEditor({
               Duplicate Variant
             </AppButton>
             <AppButton
-              className="danger"
+              variant="danger"
               disabled={inUse}
               title={
                 inUse

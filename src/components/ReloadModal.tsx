@@ -3,6 +3,8 @@ import { availableFor, countIn, findAmmo, loadedCount, sanitizePlan } from "../l
 import type { LedgerState, Plan, Weapon } from "../lib/types";
 import { blankSlots } from "../lib/util";
 import { Cartridge } from "./Cartridge";
+import { CylinderMagazine, TubeMagazine } from "./Magazine";
+import "./Overlays.css";
 import { AppButton, Icon, Modal } from "./ui";
 
 export function ReloadModal({
@@ -30,6 +32,7 @@ export function ReloadModal({
   const possible = state.ammo.every((a) => count(a.id) <= pool(a.id));
   const selectedAmmo = findAmmo(state, selected);
   const hasStandard = !!findAmmo(state, "standard");
+  const planned = loadedCount(plan);
 
   function add(id: string) {
     const index = plan.findIndex((x) => !x);
@@ -56,43 +59,23 @@ export function ReloadModal({
     setPlan(next);
   }
 
-  const slotButton = (id: string | null, i: number, extraClass = "") => {
-    const a = findAmmo(state, id);
-    return (
-      <button
-        key={i}
-        className={`${extraClass} ${a ? "filled" : ""}`.trim()}
-        onClick={() => a && remove(i)}
-        style={{ "--ammo": a?.color } as CSSProperties}
-        aria-label={a ? `Remove ${a.name} from slot ${i + 1}` : `Slot ${i + 1} empty`}
-      >
-        {a ? (
-          <Cartridge ammo={a} small density={state.theme.density} />
-        ) : (
-          <b>{i + 1}</b>
-        )}
-      </button>
-    );
-  };
-
   return (
-    <Modal className="reload-modal glass" labelledBy="reload-title" onDismiss={close}>
-      <div className="modal-head">
+    <Modal className="reload-modal panel" labelledBy="reload-title" onDismiss={close}>
+      <header className="modal-head">
         <div>
-          <span>PHYSICAL LOAD CONFIGURATOR</span>
-          <h2 id="reload-title">Prepare {weapon.shortName}</h2>
-          <p>
-            Click an ammunition card to seat one round. Click a cartridge in the
-            weapon to remove it.
-          </p>
+          <span className="eyebrow">Physical load configurator</span>
+          <h2 id="reload-title" className="display">
+            Prepare {weapon.shortName}
+          </h2>
+          <p>Tap a cartridge to seat one round. Tap a round in the weapon to take it out.</p>
         </div>
-        <button onClick={close} aria-label="Close reload">
+        <AppButton className="btn--icon" variant="ghost" onClick={close} aria-label="Close reload">
           <Icon name="close" />
-        </button>
-      </div>
+        </AppButton>
+      </header>
       <div className="reload-layout">
         <div className="reload-catalog">
-          <div className="reload-tools">
+          <div className="segmented well reload-tools">
             <button onClick={() => setPlan(weapon.slots)}>Current</button>
             <button onClick={() => setPlan(weapon.lastLoad)}>Last Load</button>
             <button onClick={() => fillWith("standard", false)} disabled={!hasStandard}>
@@ -110,7 +93,7 @@ export function ReloadModal({
                   tabIndex={left > 0 ? 0 : -1}
                   aria-disabled={left <= 0}
                   aria-label={`Load one ${a.name}. ${left} available.`}
-                  className={`${selected === a.id ? "active" : ""} ${left <= 0 ? "depleted" : ""}`}
+                  className={`load-card ${selected === a.id ? "active" : ""} ${left <= 0 ? "depleted" : ""}`}
                   style={{ "--ammo": a.color } as CSSProperties}
                   onClick={() => {
                     setSelected(a.id);
@@ -127,13 +110,13 @@ export function ReloadModal({
                   <div>
                     <b>{a.name}</b>
                     <small>{a.effect}</small>
-                    <span>
+                    <span className="num">
                       {left} available · {count(a.id)} planned
                     </span>
                   </div>
-                  <span className="load-card-action">
-                    {left > 0 ? "LOAD" : "EMPTY"}
-                    <b>＋</b>
+                  <span className="load-action" aria-hidden="true">
+                    <Icon name={left > 0 ? "plus" : "minus"} />
+                    {left > 0 ? "Load" : "Empty"}
                   </span>
                 </article>
               );
@@ -141,61 +124,64 @@ export function ReloadModal({
           </div>
         </div>
         <div className="reload-plan">
-          <div className="plan-stage">
-            <span>{weapon.type === "lever" ? "TUBULAR MAGAZINE CUTAWAY" : "OPEN CYLINDER"}</span>
+          <div className={`plan-stage ${weapon.type}`}>
+            <span className="eyebrow">{weapon.type === "lever" ? "Tubular magazine" : "Open cylinder"}</span>
             {weapon.type === "lever" ? (
-              <div className="reload-tube">{plan.map((id, i) => slotButton(id, i))}</div>
+              <TubeMagazine state={state} slots={plan} selectedSlot={-1} onRemove={remove} />
             ) : (
-              <div className="reload-cylinder">
-                {plan.map((id, i) => slotButton(id, i, `pos-${i}`))}
-                <i />
-              </div>
+              <CylinderMagazine state={state} slots={plan} selectedSlot={-1} onRemove={remove} />
             )}
           </div>
-          <div className="selected-load-type">
+          <div className="selected-load-type well">
             <Cartridge ammo={selectedAmmo} small density={state.theme.density} />
             <div>
-              <span>SELECTED TYPE</span>
+              <span className="eyebrow">Selected type</span>
               <b>{selectedAmmo?.name || "—"}</b>
             </div>
-            <button onClick={() => fillWith(selected, true)} disabled={!selectedAmmo}>
-              Fill Entire Weapon
-            </button>
+            <AppButton size="sm" onClick={() => fillWith(selected, true)} disabled={!selectedAmmo}>
+              Fill entire weapon
+            </AppButton>
           </div>
-          <div className="preset-strip">
-            <span>ONE-TAP PRESETS</span>
-            {state.presets
-              .filter((p) => p.weaponId === weapon.id)
-              .map((p) => (
-                <button key={p.id} onClick={() => setPlan(p.slots)}>
-                  {p.favorite && "✦ "}
-                  {p.name}
-                </button>
-              ))}
-          </div>
+          {state.presets.some((p) => p.weaponId === weapon.id) && (
+            <div className="preset-strip">
+              <span className="eyebrow">One-tap presets</span>
+              {state.presets
+                .filter((p) => p.weaponId === weapon.id)
+                .map((p) => (
+                  <AppButton key={p.id} size="sm" onClick={() => setPlan(p.slots)}>
+                    {p.favorite && <Icon name="spark" />}
+                    {p.name}
+                  </AppButton>
+                ))}
+            </div>
+          )}
           <div className="plan-summary">
-            <span>
-              <small>PREPARED</small>
+            <div className="stat">
+              <span>Prepared</span>
               <b>
-                {loadedCount(plan)}/{weapon.capacity}
+                {planned}
+                <small> / {weapon.capacity}</small>
               </b>
-            </span>
-            <span>
-              <small>EMPTY</small>
-              <b>{plan.filter((x) => !x).length}</b>
-            </span>
-            <span>
-              <small>STATUS</small>
-              <b className={possible ? "ready" : "bad"}>{possible ? "READY" : "SHORTAGE"}</b>
-            </span>
+            </div>
+            <div className="stat">
+              <span>Empty</span>
+              <b>{weapon.capacity - planned}</b>
+            </div>
+            <div className="stat">
+              <span>Status</span>
+              <b className={possible ? "ok" : "bad"}>{possible ? "Ready" : "Shortage"}</b>
+            </div>
           </div>
           <AppButton
-            className="primary commit-load"
+            variant="primary"
+            size="lg"
+            block
+            className="commit-load"
             onClick={() => commit(plan, selected)}
             disabled={!possible}
           >
             <Icon name="reload" />
-            Load {loadedCount(plan)} Rounds
+            Load {planned} Rounds
           </AppButton>
         </div>
       </div>

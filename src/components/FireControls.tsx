@@ -1,6 +1,9 @@
 import type { CSSProperties } from "react";
 import type { Ammo, Weapon } from "../lib/types";
+import { capitalize } from "../lib/util";
 import { Cartridge, type AnimationDensity } from "./Cartridge";
+import "./FireControls.css";
+import { Ticker } from "./Ticker";
 import { Icon } from "./ui";
 
 type FireProps = {
@@ -12,6 +15,40 @@ type FireProps = {
   density: AnimationDensity;
   fire: () => void;
 };
+
+/** The trigger itself: a brass-bezelled button that kicks when it fires. */
+function FireButton({
+  fire,
+  firing,
+  disabled,
+  caption,
+  big = false,
+}: {
+  fire: () => void;
+  firing: boolean;
+  disabled: boolean;
+  caption: string;
+  big?: boolean;
+}) {
+  return (
+    <button
+      className={`fire-button ${big ? "big" : ""} ${firing ? "firing" : ""}`}
+      onClick={fire}
+      disabled={disabled}
+      aria-label={`Fire. ${caption}`}
+    >
+      <span className="fire-bezel" aria-hidden="true" />
+      <span className="fire-face" aria-hidden="true">
+        <strong>{firing ? "Bang" : "Fire"}</strong>
+        <small>{caption}</small>
+      </span>
+    </button>
+  );
+}
+
+function elementCaption(weapon: Weapon) {
+  return weapon.element !== "off" ? `+1d6 ${capitalize(weapon.element)}` : "";
+}
 
 /** Thumb-reach controls shown while Combat Mode is on. */
 export function CombatDock({
@@ -33,7 +70,7 @@ export function CombatDock({
   openReload: () => void;
 }) {
   return (
-    <div className="combat-dock glass">
+    <div className="dock combat-dock panel">
       <button className="dock-side" onClick={undo} disabled={!canUndo}>
         <Icon name="undo" />
         <span>Undo</span>
@@ -42,38 +79,37 @@ export function CombatDock({
         className="dock-round"
         onClick={cycleAmmo}
         disabled={!selectedAmmo}
+        style={{ "--ammo": selectedAmmo?.color } as CSSProperties}
         aria-label={`Next round: ${selectedAmmo?.name || "none"}. Tap to cycle loaded types.`}
       >
         <Cartridge ammo={selectedAmmo} small selected density={density} />
         <span>
-          <small>NEXT ROUND</small>
-          <b>{selectedAmmo?.name || "No cartridge"}</b>
+          <small>Next round · tap to switch</small>
+          <b key={selectedAmmo?.id}>{selectedAmmo?.name || "No cartridge"}</b>
           <em>{selectedLoaded} loaded</em>
         </span>
       </button>
-      <button className="combat-fire" onClick={fire} disabled={!selectedLoaded || firing}>
-        <span className="fire-ring" />
-        <strong>FIRE</strong>
-        <small>
-          {firing
-            ? "CYCLING"
-            : weapon.element !== "off"
-              ? `+1D6 ${weapon.element.toUpperCase()}`
-              : "READY"}
-        </small>
-      </button>
+      <FireButton
+        big
+        fire={fire}
+        firing={firing}
+        disabled={!selectedLoaded || firing}
+        caption={firing ? "Cycling" : elementCaption(weapon) || "Ready"}
+      />
       <button
         className="dock-mag"
         onClick={openReload}
         aria-label={`Magazine ${loaded} of ${weapon.capacity}. Open reload.`}
       >
-        <small>MAGAZINE</small>
+        <small>Magazine</small>
         <b>
-          {loaded}
+          <Ticker value={loaded} />
           <em>/{weapon.capacity}</em>
         </b>
-        <span>
-          <i style={{ width: `${(loaded / weapon.capacity) * 100}%` }} />
+        <span className="mag-pips" aria-hidden="true">
+          {weapon.slots.map((id, i) => (
+            <i key={i} className={id ? "full" : ""} />
+          ))}
         </span>
       </button>
       <button className="dock-side" onClick={openReload}>
@@ -85,41 +121,29 @@ export function CombatDock({
 }
 
 /** Floating trigger tab on the Armory view outside Combat Mode. */
-export function ArmoryFireTab({
-  weapon,
-  selectedAmmo,
-  selectedLoaded,
-  loaded,
-  firing,
-  density,
-  fire,
-  accent,
-}: FireProps & { accent: string }) {
+export function ArmoryFireTab({ weapon, selectedAmmo, selectedLoaded, loaded, firing, density, fire }: FireProps) {
   return (
-    <div
-      className={`armory-fire-tab glass element-${weapon.element}`}
-      style={{ "--ammo": selectedAmmo?.color || accent } as CSSProperties}
-    >
-      <div className="armory-fire-round">
+    <div className="dock armory-fire-tab panel" style={{ "--ammo": selectedAmmo?.color } as CSSProperties}>
+      <div className="fire-tab-round">
         <Cartridge ammo={selectedAmmo} small selected density={density} />
         <span>
-          <small>NEXT SHOT</small>
-          <b>{selectedAmmo?.name || "No cartridge"}</b>
+          <small>Next shot</small>
+          <b key={selectedAmmo?.id}>{selectedAmmo?.name || "No cartridge"}</b>
         </span>
       </div>
-      <button onClick={fire} disabled={!selectedLoaded || firing}>
-        <span className="fire-tab-hammer" />
-        <strong>{firing ? "BANG" : "FIRE"}</strong>
-        <small>{selectedLoaded ? `${selectedLoaded} READY` : "EMPTY"}</small>
-      </button>
-      <div className="armory-fire-status">
-        <small>{weapon.shortName.toUpperCase()}</small>
+      <FireButton
+        fire={fire}
+        firing={firing}
+        disabled={!selectedLoaded || firing}
+        caption={selectedLoaded ? `${selectedLoaded} ready` : "Empty"}
+      />
+      <div className="fire-tab-status">
+        <small>{weapon.shortName}</small>
         <b>
-          {loaded}/{weapon.capacity}
+          <Ticker value={loaded} />
+          <em>/{weapon.capacity}</em>
         </b>
-        <em>
-          {weapon.element === "off" ? "KINETIC" : `+1D6 ${weapon.element.toUpperCase()}`}
-        </em>
+        <span>{elementCaption(weapon) || "Kinetic"}</span>
       </div>
     </div>
   );

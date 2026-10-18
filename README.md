@@ -64,9 +64,10 @@ src/
     migrate.ts       save loading, v3/v4/v5 migration, import parsing
     defaults.ts      factory ammunition, weapons, presets, storage keys
     types.ts         shared types
-  components/        one file per screen or dialog; Cartridge.tsx is the
-                     cartridge design system and renderer
-  styles/            visual system, themes and animations
+  components/        one file per screen or dialog, each with its own CSS;
+                     WeaponArt (animated SVG guns), Magazine (tube and
+                     cylinder), Cartridge (round renderer), Scenery
+  styles/            design tokens, materials, base styles and fonts
 pwa/                 service-worker template + Vite plugin that fills in the
                      precache list and cache version at build time
 tests/               unit tests for the rules and migration, plus UI tests

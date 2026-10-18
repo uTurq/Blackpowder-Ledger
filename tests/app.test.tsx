@@ -11,7 +11,7 @@ function start(motion: Motion = "off", combatMode = false) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   return render(<App />);
 }
-const magazine = () => screen.getByText("PREPARED AMMUNITION").closest(".magazine-block")!;
+const magazine = () => document.querySelector(".magazine-block")!;
 const loadedText = () => magazine().querySelector(".section-title b")!.textContent;
 const press = (key: string, init: KeyboardEventInit = {}) =>
   fireEvent.keyDown(window, { key, code: key === " " ? "Space" : `Key${key.toUpperCase()}`, ...init });
@@ -35,14 +35,15 @@ describe("armory", () => {
 
   it("starts a fresh encounter each time Combat Mode is entered", () => {
     start("off");
-    const toggle = () => fireEvent.click(document.querySelector(".combat-switch")!);
+    const toggle = () => fireEvent.click(document.querySelector(".combat-toggle")!);
     toggle();
     fireEvent.click(screen.getByRole("button", { name: /Next Turn/ }));
     fireEvent.click(screen.getByRole("button", { name: /Next Turn/ }));
-    expect(screen.getByText("Turn 3")).toBeTruthy();
+    const turn = () => document.querySelector(".combat-side h2")!.textContent;
+    expect(turn()).toBe("Turn 3");
     toggle();
     toggle();
-    expect(screen.getByText("Turn 1")).toBeTruthy();
+    expect(turn()).toBe("Turn 1");
     // Starting over is undoable in case Combat Mode was toggled by accident.
     press("z", { ctrlKey: true });
     expect(document.querySelector(".combat-side h2")!.textContent).toBe("Turn 3");

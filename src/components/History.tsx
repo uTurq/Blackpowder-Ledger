@@ -1,6 +1,7 @@
 import type { Activity } from "../lib/types";
 import { timeAgo } from "../lib/util";
-import { Icon, Modal } from "./ui";
+import "./Overlays.css";
+import { AppButton, Icon, Modal } from "./ui";
 
 export function HistoryPeek({
   latest,
@@ -25,41 +26,52 @@ export function HistoryPeek({
   );
 }
 
+const KIND_ICONS: Record<string, string> = {
+  shot: "flame",
+  reload: "reload",
+  craft: "workshop",
+  gold: "coins",
+  turn: "turn",
+  undo: "undo",
+  preset: "presets",
+  ammo: "spark",
+  inventory: "edit",
+  data: "download",
+};
+
+/** The field record, kept like a ruled ledger page. */
 export function HistoryDrawer({ entries, close }: { entries: Activity[]; close: () => void }) {
   return (
     <Modal
       as="aside"
-      scrimClassName="drawer-scrim"
-      className="history-drawer glass"
+      scrimClassName="modal-scrim drawer-scrim"
+      className="history-drawer panel"
       labelledBy="history-title"
       onDismiss={close}
     >
-      <div className="drawer-head">
+      <header className="modal-head">
         <div>
-          <span>FIELD RECORD</span>
-          <h2 id="history-title">Activity history</h2>
+          <span className="eyebrow">Field record</span>
+          <h2 id="history-title" className="display">
+            Activity history
+          </h2>
         </div>
-        <button onClick={close} aria-label="Close history">
+        <AppButton className="btn--icon" variant="ghost" onClick={close} aria-label="Close history">
           <Icon name="close" />
-        </button>
-      </div>
-      <div className="history-list">
+        </AppButton>
+      </header>
+      <ol className="ledger-page">
         {entries.map((a) => (
-          <article key={a.id} className={`kind-${a.kind}`}>
-            <i />
-            <div>
-              <p>{a.text}</p>
-              <span>
-                {new Date(a.time).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}{" "}
-                · {timeAgo(a.time)}
-              </span>
-            </div>
-          </article>
+          <li key={a.id} className={`kind-${a.kind}`}>
+            <Icon name={KIND_ICONS[a.kind] || "spark"} />
+            <p>{a.text}</p>
+            <time dateTime={new Date(a.time).toISOString()}>
+              {new Date(a.time).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+              <small>{timeAgo(a.time)}</small>
+            </time>
+          </li>
         ))}
-      </div>
+      </ol>
     </Modal>
   );
 }

@@ -4,7 +4,10 @@ import { countIn, findAmmo, loadedCount } from "../lib/ledger";
 import type { Passive } from "../lib/store";
 import type { LedgerState, Weapon } from "../lib/types";
 import { capitalize } from "../lib/util";
+import "./Armory.css";
 import { Cartridge } from "./Cartridge";
+import { CylinderMagazine, TubeMagazine } from "./Magazine";
+import { Ticker } from "./Ticker";
 import { AppButton, Icon } from "./ui";
 import { WeaponArt } from "./WeaponArt";
 
@@ -13,7 +16,6 @@ type ArmoryProps = {
   weapon: Weapon;
   firing: boolean;
   shotFx: string;
-  accent: string;
   passive: Passive;
   chooseWeapon: (id: string) => void;
   chooseAmmo: (id: string) => void;
@@ -27,7 +29,7 @@ type ArmoryProps = {
 
 export function Armory(props: ArmoryProps) {
   return (
-    <div className="armory-layout">
+    <div className="armory">
       <WeaponPanel {...props} />
       <SidePanel {...props} />
     </div>
@@ -39,7 +41,6 @@ function WeaponPanel({
   weapon,
   firing,
   shotFx,
-  accent,
   passive,
   chooseWeapon,
   chooseAmmo,
@@ -49,10 +50,9 @@ function WeaponPanel({
 }: ArmoryProps) {
   const loaded = loadedCount(weapon.slots);
   const selectedAmmo = findAmmo(state, state.selectedAmmoId);
-  const selectedSlot = state.selectedAmmoId
-    ? weapon.slots.indexOf(state.selectedAmmoId)
-    : -1;
+  const selectedSlot = state.selectedAmmoId ? weapon.slots.indexOf(state.selectedAmmoId) : -1;
   const density = state.theme.density;
+  const elemental = state.elementalUnlocked && weapon.element !== "off";
   const setElement = (recipe: (w: Weapon) => void) =>
     passive((n) => {
       const w = n.weapons.find((x) => x.id === weapon.id);
@@ -60,115 +60,63 @@ function WeaponPanel({
     });
 
   return (
-    <section className="panel weapon-panel glass">
-      <div className="panel-head">
+    <section className="panel weapon-panel">
+      <header className="panel-head">
         <div>
-          <span className="eyebrow">TACTICAL WEAPONS DESK</span>
-          <h1>
-            {state.combatMode ? "Ready to engage" : "Choose the shot, not the slot."}
-          </h1>
-          <p>
-            Tactical Selection keeps your chosen cartridge armed until that
-            type runs dry.
-          </p>
+          <span className="eyebrow">Tactical Weapons Desk</span>
+          <h1>{state.combatMode ? "Ready to engage." : "Choose the shot, not the slot."}</h1>
+          <p>Tactical Selection keeps your chosen cartridge armed until that type runs dry.</p>
         </div>
-        <div className="weapon-tabs" role="group" aria-label="Active weapon">
+        <div className="segmented well weapon-switch" role="group" aria-label="Active weapon">
           {state.weapons.map((w) => (
-            <button
-              key={w.id}
-              className={w.id === weapon.id ? "active" : ""}
-              aria-pressed={w.id === weapon.id}
-              onClick={() => chooseWeapon(w.id)}
-            >
-              <span aria-hidden="true">{w.type === "revolver" ? "◉" : "⌁"}</span>
-              {w.shortName}
+            <button key={w.id} aria-pressed={w.id === weapon.id} onClick={() => chooseWeapon(w.id)}>
+              <span>{w.shortName}</span>
               <small>
                 {loadedCount(w.slots)}/{w.capacity}
               </small>
             </button>
           ))}
         </div>
-      </div>
-      <div className="weapon-stage">
-        <div className="stage-light" />
-        <div className="weapon-label">
-          <span>{weapon.type === "revolver" ? "SECONDARY" : "PRIMARY"}</span>
+      </header>
+
+      <div
+        className={`weapon-stage ${weapon.type} ${elemental ? "infused" : ""} ${firing ? "firing" : ""} element-${weapon.element}`}
+      >
+        <span className="stage-flash" aria-hidden="true" />
+        <div className="stage-plate">
+          <span className="eyebrow">{weapon.type === "revolver" ? "Sidearm" : "Long gun"}</span>
           <strong>{weapon.name}</strong>
         </div>
         <WeaponArt weapon={weapon} firing={firing} fx={shotFx} />
-        <div className="bench-line" />
         <div className="stage-status">
-          <span>
-            <i className={`status-dot ${loaded ? "ready" : ""}`} />
-            {loaded ? "WEAPON READY" : "EMPTY"}
+          <span className={loaded ? "ready" : "empty"}>
+            <i />
+            {loaded ? "Weapon ready" : "Empty"}
           </span>
-          <span>
-            {weapon.element === "off"
-              ? "CHAMBER: KINETIC"
-              : `${weapon.element.toUpperCase()} · +1D6`}
-          </span>
+          <span>{elemental ? `${capitalize(weapon.element)} chamber · +1d6` : "Kinetic chamber"}</span>
         </div>
       </div>
 
       <div className="magazine-block">
         <div className="section-title">
           <div>
-            <span>
-              {weapon.type === "revolver" ? "CYLINDER LEDGER" : "PREPARED AMMUNITION"}
-            </span>
-            <small>Select any loaded cartridge family</small>
+            <span className="eyebrow">{weapon.type === "revolver" ? "Cylinder" : "Tubular magazine"}</span>
+            <small>Tap any loaded round to arm it</small>
           </div>
           <b>
-            {loaded} <em>/ {weapon.capacity}</em>
+            <Ticker value={loaded} /> <em>/ {weapon.capacity}</em>
           </b>
         </div>
         {weapon.type === "lever" ? (
-          <div className="tube-mag" aria-label="Loaded cartridges">
-            {weapon.slots.map((id, i) => {
-              const ammo = findAmmo(state, id);
-              const selected = !!ammo && ammo.id === state.selectedAmmoId;
-              return (
-                <button
-                  key={i}
-                  disabled={!ammo}
-                  className={`${ammo ? "loaded" : "empty"} ${selected ? "selected" : ""}`}
-                  style={{ "--ammo": ammo?.color } as CSSProperties}
-                  onClick={() => ammo && chooseAmmo(ammo.id)}
-                  aria-pressed={ammo ? selected : undefined}
-                  aria-label={ammo ? `${ammo.name}, slot ${i + 1}` : `Empty slot ${i + 1}`}
-                >
-                  <Cartridge ammo={ammo} small selected={selected} density={density} />
-                </button>
-              );
-            })}
-            <span className="tube-spring" />
-          </div>
+          <TubeMagazine state={state} slots={weapon.slots} selectedSlot={selectedSlot} onSelect={chooseAmmo} />
         ) : (
-          <div
-            className={`cylinder-mag ${firing ? "firing" : ""}`}
-            aria-label="Revolver cylinder"
-          >
-            {weapon.slots.map((id, i) => {
-              const ammo = findAmmo(state, id);
-              const selected = i === selectedSlot;
-              return (
-                <button
-                  key={i}
-                  disabled={!ammo}
-                  className={`${ammo ? "loaded" : "empty"} pos-${i} ${selected ? "selected" : ""}`}
-                  style={{ "--ammo": ammo?.color } as CSSProperties}
-                  onClick={() => ammo && chooseAmmo(ammo.id)}
-                  aria-pressed={ammo ? ammo.id === state.selectedAmmoId : undefined}
-                  aria-label={
-                    ammo ? `${ammo.name}, chamber ${i + 1}` : `Empty chamber ${i + 1}`
-                  }
-                >
-                  <Cartridge ammo={ammo} small selected={selected} density={density} />
-                </button>
-              );
-            })}
-            <span className="cyl-center">AC</span>
-          </div>
+          <CylinderMagazine
+            state={state}
+            slots={weapon.slots}
+            selectedSlot={selectedSlot}
+            onSelect={chooseAmmo}
+            firing={firing}
+          />
         )}
         <div className="ammo-legend">
           {state.ammo
@@ -176,17 +124,12 @@ function WeaponPanel({
             .map((a) => (
               <button
                 key={a.id}
-                className={state.selectedAmmoId === a.id ? "active" : ""}
+                className="legend-chip"
                 aria-pressed={state.selectedAmmoId === a.id}
                 style={{ "--ammo": a.color } as CSSProperties}
                 onClick={() => chooseAmmo(a.id)}
               >
-                <Cartridge
-                  ammo={a}
-                  small
-                  selected={state.selectedAmmoId === a.id}
-                  density={density}
-                />
+                <Cartridge ammo={a} small selected={state.selectedAmmoId === a.id} density={density} />
                 <span>
                   <b>{a.name}</b>
                   <small>{a.effect}</small>
@@ -194,85 +137,76 @@ function WeaponPanel({
                 <em>×{countIn(weapon.slots, a.id)}</em>
               </button>
             ))}
+          {!loaded && <p className="empty-note">Nothing chambered. Reload to seat rounds.</p>}
         </div>
       </div>
 
       {!state.combatMode && (
         <>
-          <div
-            className="selected-card"
-            style={{ "--ammo": selectedAmmo?.color || accent } as CSSProperties}
-          >
-            <Cartridge ammo={selectedAmmo} selected density={density} />
+          <div className="next-shot" style={{ "--ammo": selectedAmmo?.color || "var(--accent)" } as CSSProperties}>
+            <div className="next-shot-round">
+              <Cartridge ammo={selectedAmmo} selected density={density} />
+            </div>
             <div>
-              <span>NEXT SHOT</span>
-              <h2>{selectedAmmo?.name || "No round selected"}</h2>
-              <p>
-                {selectedAmmo?.effect ||
-                  "Load the weapon or select a prepared cartridge."}
-              </p>
-              {weapon.element !== "off" && state.elementalUnlocked && (
-                <small>Elemental Chamber · +1d6 {weapon.element}</small>
-              )}
+              <span className="eyebrow">Next shot</span>
+              <h2 className="display">{selectedAmmo?.name || "No round selected"}</h2>
+              <p>{selectedAmmo?.effect || "Load the weapon or select a prepared cartridge."}</p>
+              {elemental && <small className="element-note">Elemental Chamber · +1d6 {weapon.element}</small>}
             </div>
           </div>
           {state.elementalUnlocked && (
-            <div className={`elemental-armory-control element-${weapon.element}`}>
-              <label className="element-switch">
-                <input
-                  type="checkbox"
-                  checked={weapon.element !== "off"}
-                  onChange={(e) =>
-                    setElement((w) => {
-                      if (e.target.checked) w.element = w.lastElement || "fire";
-                      else {
-                        if (w.element !== "off") w.lastElement = w.element;
-                        w.element = "off";
-                      }
-                    })
-                  }
-                />
-                <i />
+            <div className={`element-control well element-${weapon.element}`}>
+              <label className="element-toggle">
+                <span className="switch">
+                  <input
+                    type="checkbox"
+                    checked={weapon.element !== "off"}
+                    onChange={(e) =>
+                      setElement((w) => {
+                        if (e.target.checked) w.element = w.lastElement || "fire";
+                        else {
+                          if (w.element !== "off") w.lastElement = w.element;
+                          w.element = "off";
+                        }
+                      })
+                    }
+                  />
+                  <i />
+                </span>
                 <span>
                   <b>Elemental Shot</b>
-                  <small>
-                    {weapon.element === "off"
-                      ? "Kinetic chamber"
-                      : `Armed · +1d6 ${weapon.element}`}
-                  </small>
+                  <small>{weapon.element === "off" ? "Kinetic chamber" : `Armed · +1d6 ${weapon.element}`}</small>
                 </span>
               </label>
               {weapon.element !== "off" && (
-                <label className="element-selector">
-                  Infusion
-                  <select
-                    value={weapon.element}
-                    onChange={(e) =>
-                      setElement((w) => {
-                        w.element = e.target.value;
-                        w.lastElement = e.target.value;
-                      })
-                    }
-                  >
-                    {ELEMENTS.filter((x) => x !== "off").map((x) => (
-                      <option key={x} value={x}>
-                        {capitalize(x)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div className="element-picker" role="group" aria-label="Infusion">
+                  {ELEMENTS.filter((x) => x !== "off").map((x) => (
+                    <button
+                      key={x}
+                      className={`element-${x}`}
+                      aria-pressed={weapon.element === x}
+                      aria-label={capitalize(x)}
+                      title={capitalize(x)}
+                      onClick={() =>
+                        setElement((w) => {
+                          w.element = x;
+                          w.lastElement = x;
+                        })
+                      }
+                    >
+                      <Icon name="flame" />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           )}
           <div className="weapon-actions">
-            <AppButton className="primary" onClick={() => openReload()}>
+            <AppButton variant="primary" size="lg" onClick={() => openReload()}>
               <Icon name="reload" />
               Reload / Configure
             </AppButton>
-            <AppButton
-              onClick={() => openReload(weapon.lastLoad)}
-              disabled={!weapon.lastLoad.some(Boolean)}
-            >
+            <AppButton onClick={() => openReload(weapon.lastLoad)} disabled={!weapon.lastLoad.some(Boolean)}>
               Repeat Last Load
             </AppButton>
             <AppButton onClick={unloadAll} disabled={!loaded}>
@@ -288,66 +222,46 @@ function WeaponPanel({
   );
 }
 
-function SidePanel({
-  state,
-  weapon,
-  passive,
-  nextTurn,
-  rollAttack,
-  adjustReserve,
-}: ArmoryProps) {
+function SidePanel({ state, weapon, passive, nextTurn, rollAttack, adjustReserve }: ArmoryProps) {
   const loaded = loadedCount(weapon.slots);
   const integrity = Math.round((loaded / weapon.capacity) * 100);
-  return (
-    <aside className={`panel side-panel glass ${state.combatMode ? "combat-side" : ""}`}>
-      <div className="panel-head compact">
-        <div>
-          <span className="eyebrow">
-            {state.combatMode ? "COMBAT TELEMETRY" : "AMMUNITION CASE"}
-          </span>
-          <h2>{state.combatMode ? `Turn ${state.turn}` : "Reserve inventory"}</h2>
-        </div>
-        {state.combatMode ? (
-          <AppButton className="turn-btn" onClick={nextTurn}>
+  if (state.combatMode)
+    return (
+      <aside className="panel side-panel combat-side">
+        <header className="turn-bar">
+          <div>
+            <span className="eyebrow">Combat telemetry</span>
+            <h2 className="display" key={state.turn}>
+              Turn <span className="num">{state.turn}</span>
+            </h2>
+          </div>
+          <AppButton variant="primary" className="turn-btn" onClick={nextTurn}>
             Next Turn <Icon name="turn" />
           </AppButton>
-        ) : (
-          <button
-            className={`inventory-edit ${state.inventoryEdit ? "active" : ""}`}
-            aria-pressed={state.inventoryEdit}
-            onClick={() =>
-              passive((n) => {
-                n.inventoryEdit = !n.inventoryEdit;
-              })
-            }
-          >
-            <Icon name="edit" />
-            {state.inventoryEdit ? "Done" : "Edit"}
-          </button>
-        )}
-      </div>
-      {state.combatMode ? (
+        </header>
         <div className="combat-telemetry">
           <div className="combat-gauge">
-            <div>
+            <div className="gauge-track">
               <span style={{ width: `${integrity}%` }} />
             </div>
-            <small>Magazine integrity</small>
+            <small>Magazine</small>
             <b>{integrity}%</b>
           </div>
           {state.roller.enabled && (
-            <div className="roll-card">
-              <span>ATTACK ROLLER</span>
-              <strong aria-live="polite">
+            <div className="roll-card well">
+              <span className="eyebrow">Attack roll</span>
+              <strong aria-live="polite" key={state.roller.last}>
                 {state.roller.last ||
                   `+${state.roller.dex + state.roller.prof + state.roller.misc} to hit`}
               </strong>
-              <AppButton onClick={rollAttack}>Roll d20</AppButton>
+              <AppButton size="sm" onClick={rollAttack}>
+                <Icon name="dice" /> Roll d20
+              </AppButton>
             </div>
           )}
           <div className="effect-tray">
             <div className="tray-title">
-              <span>LIVE EFFECTS</span>
+              <span className="eyebrow">Live effects</span>
               <b>{state.reminders.length}</b>
             </div>
             {state.reminders.length ? (
@@ -358,7 +272,7 @@ function SidePanel({
                     <strong>{r.label}</strong>
                     <p>{r.detail}</p>
                   </div>
-                  {r.turns !== null && <span>{r.turns}T</span>}
+                  {r.turns !== null && <span className="turns">{r.turns}T</span>}
                   <button
                     aria-label={`Dismiss ${r.label}`}
                     onClick={() =>
@@ -367,15 +281,12 @@ function SidePanel({
                       })
                     }
                   >
-                    ×
+                    <Icon name="close" />
                   </button>
                 </article>
               ))
             ) : (
-              <div className="empty-effects">
-                <Icon name="spark" />
-                <p>Special ammunition reminders will appear here.</p>
-              </div>
+              <p className="empty-effects">Special ammunition reminders appear here.</p>
             )}
           </div>
           <div className="combat-shortcuts">
@@ -390,49 +301,62 @@ function SidePanel({
             </span>
           </div>
         </div>
-      ) : (
-        <div className="inventory-list">
-          {state.ammo.map((a) => {
-            const inWeapons = state.weapons.reduce((n, w) => n + countIn(w.slots, a.id), 0);
-            return (
-              <article
-                className="inventory-card"
-                key={a.id}
-                style={{ "--ammo": a.color } as CSSProperties}
-              >
-                <Cartridge ammo={a} density={state.theme.density} />
-                <div>
-                  <strong>{a.name}</strong>
-                  <p>{a.effect}</p>
-                  <span>
-                    <b>{a.reserve}</b> reserve · <b>{inWeapons}</b> loaded
-                  </span>
-                </div>
-                {state.inventoryEdit ? (
-                  <div className="stepper">
-                    <button
-                      disabled={!a.reserve}
-                      aria-label={`Remove one ${a.name}`}
-                      onClick={() => adjustReserve(a.id, -1)}
-                    >
-                      −
-                    </button>
-                    <b>{a.reserve}</b>
-                    <button
-                      aria-label={`Add one ${a.name}`}
-                      onClick={() => adjustReserve(a.id, 1)}
-                    >
-                      +
-                    </button>
-                  </div>
-                ) : (
-                  <b className="reserve-badge">{a.reserve}</b>
-                )}
-              </article>
-            );
-          })}
+      </aside>
+    );
+
+  return (
+    <aside className="panel side-panel">
+      <header className="panel-head compact">
+        <div>
+          <span className="eyebrow">Ammunition case</span>
+          <h2 className="display">Reserve inventory</h2>
         </div>
-      )}
+        <AppButton
+          size="sm"
+          className="inventory-edit"
+          aria-pressed={state.inventoryEdit}
+          onClick={() =>
+            passive((n) => {
+              n.inventoryEdit = !n.inventoryEdit;
+            })
+          }
+        >
+          <Icon name={state.inventoryEdit ? "check" : "edit"} />
+          {state.inventoryEdit ? "Done" : "Edit"}
+        </AppButton>
+      </header>
+      <div className="inventory-list">
+        {state.ammo.map((a) => {
+          const inWeapons = state.weapons.reduce((n, w) => n + countIn(w.slots, a.id), 0);
+          return (
+            <article className="inventory-card" key={a.id} style={{ "--ammo": a.color } as CSSProperties}>
+              <Cartridge ammo={a} density={state.theme.density} />
+              <div>
+                <strong>{a.name}</strong>
+                <p>{a.effect}</p>
+                <span>
+                  <b>{a.reserve}</b> reserve · <b>{inWeapons}</b> loaded
+                </span>
+              </div>
+              {state.inventoryEdit ? (
+                <div className="stepper">
+                  <button disabled={!a.reserve} aria-label={`Remove one ${a.name}`} onClick={() => adjustReserve(a.id, -1)}>
+                    <Icon name="minus" />
+                  </button>
+                  <b>{a.reserve}</b>
+                  <button aria-label={`Add one ${a.name}`} onClick={() => adjustReserve(a.id, 1)}>
+                    <Icon name="plus" />
+                  </button>
+                </div>
+              ) : (
+                <b className="reserve-badge">
+                  <Ticker value={a.reserve} />
+                </b>
+              )}
+            </article>
+          );
+        })}
+      </div>
     </aside>
   );
 }

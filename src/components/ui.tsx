@@ -5,40 +5,31 @@ import {
   useRef,
 } from "react";
 
-const GLYPHS: Record<string, string> = {
-  armory: "⌖",
-  workshop: "⚒",
-  presets: "▤",
-  settings: "⚙",
-  reload: "↻",
-  undo: "↶",
-  history: "☷",
-  sound: "◖",
-  combat: "✦",
-  turn: "→",
-  close: "×",
-  edit: "✎",
-  download: "⇩",
-  upload: "⇧",
-  spark: "✧",
-  lock: "◆",
-};
+export { Icon } from "./Icon";
 
-export function Icon({ name }: { name: string }) {
-  return (
-    <span aria-hidden="true" className="ui-icon">
-      {GLYPHS[name] || "·"}
-    </span>
-  );
-}
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "danger" | "ghost";
+  size?: "sm" | "lg";
+  block?: boolean;
+};
 
 export function AppButton({
   children,
   className = "",
+  variant,
+  size,
+  block,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
+}: ButtonProps) {
+  const classes = [
+    "btn",
+    variant && `btn--${variant}`,
+    size && `btn--${size}`,
+    block && "btn--block",
+    className,
+  ];
   return (
-    <button type="button" {...props} className={`app-btn ${className}`}>
+    <button type="button" {...props} className={classes.filter(Boolean).join(" ")}>
       {children}
     </button>
   );
@@ -127,8 +118,8 @@ export function SettingsHeading({
 }) {
   return (
     <div className="settings-heading">
-      <span>{kicker}</span>
-      <h2>{title}</h2>
+      <span className="eyebrow">{kicker}</span>
+      <h2 className="display">{title}</h2>
       <p>{text}</p>
     </div>
   );
@@ -146,7 +137,7 @@ export function VisualSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label>
+    <label className="field">
       {label}
       <select
         aria-label={label}
@@ -180,23 +171,26 @@ export function Range({
   suffix: string;
   onChange: (v: number) => void;
 }) {
+  const pct = `${((value - min) / (max - min)) * 100}%`;
   return (
-    <label className="range-setting">
-      <span>
+    <label className="setting-row range-setting">
+      <span className="setting-copy">
         <b>{label}</b>
         <small>{detail}</small>
       </span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-      />
       <output>
         {value}
         {suffix}
       </output>
+      <input
+        className="range"
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        style={{ "--pct": pct } as React.CSSProperties}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
     </label>
   );
 }
@@ -213,17 +207,15 @@ export function Toggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="toggle-setting">
-      <span>
+    <label className="setting-row toggle-setting">
+      <span className="setting-copy">
         <b>{label}</b>
         <small>{detail}</small>
       </span>
-      <input
-        type="checkbox"
-        checked={value}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <i />
+      <span className="switch">
+        <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} />
+        <i />
+      </span>
     </label>
   );
 }

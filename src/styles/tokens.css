@@ -1,0 +1,206 @@
+/*
+ * Design tokens. Everything visual reads from here: palette, type, spacing,
+ * motion, procedural textures, and the metal/wood finishes the weapon art uses.
+ * Theme choices (accent, panel material, environment, motion) arrive as classes
+ * and custom properties on `.ledger`.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Ink on dark surfaces: aged parchment, never pure white. */
+  --ink: #efe5cf;
+  --ink-2: #c8bc9f;
+  --ink-3: #91866f;
+  --ink-4: #61594a;
+  --bg: #0a0907;
+  --danger: #d8583d;
+  --danger-ink: #ffb19c;
+  --success: #86b77f;
+  --warn: #e3a443;
+
+  --font-ui: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --font-display: "IM Fell English", "Iowan Old Style", Georgia, serif;
+  --font-engrave: "IM Fell English SC", "IM Fell English", Georgia, serif;
+  --font-wood: "Rye", "IM Fell English SC", Georgia, serif;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-snap: cubic-bezier(0.7, 0, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 220ms;
+  --dur-3: 380ms;
+  --dur-4: 650ms;
+
+  --z-scene: 0;
+  --z-shell: 10;
+  --z-dock: 40;
+  --z-toast: 120;
+  --z-modal: 90;
+
+  /* Procedural textures, rendered once by the browser and cached. */
+  --tex-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .85 0 0 0 .5 -.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tex-brushed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.002 .6' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .35 -.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tex-pebble: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='.32' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -.9 .62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tex-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.035' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .12 0 0 0 0 .07 0 0 0 0 .02 0 0 0 1.4 -.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tex-fiber-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.06' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .12 0 0 0 0 .04 0 0 0 .55 -.18'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tex-grain-wood: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .09' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .05 0 0 0 0 .02 0 0 0 1.6 -.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- Accent metal (set as --accent / --accent-hi on .ledger) ---- */
+.ledger {
+  --accent-lo: color-mix(in srgb, var(--accent) 55%, #000);
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-glow: color-mix(in srgb, var(--accent-hi) 45%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 38%, transparent);
+
+  --fs-2xs: calc(10.5px * var(--ui-scale));
+  --fs-xs: calc(11.5px * var(--ui-scale));
+  --fs-sm: calc(12.5px * var(--ui-scale));
+  --fs-md: calc(14px * var(--ui-scale));
+  --fs-lg: calc(17px * var(--ui-scale));
+  --fs-xl: calc(22px * var(--ui-scale));
+  --fs-2xl: calc(30px * var(--ui-scale));
+  --fs-3xl: calc(40px * var(--ui-scale));
+
+  --line: rgba(239, 229, 207, 0.1);
+  --line-2: rgba(239, 229, 207, 0.17);
+  --well: rgba(0, 0, 0, 0.32);
+}
+
+/* ---- Panel materials: one surface recipe each ---- */
+.ledger,
+.material-gunmetal {
+  --surface: #1b2125;
+  --surface-2: #11161a;
+  --surface-hi: rgba(225, 238, 245, 0.1);
+  --surface-edge: rgba(200, 218, 228, 0.13);
+  --surface-tex: var(--tex-brushed);
+  --surface-tex-blend: overlay;
+  --surface-tex-alpha: 0.5;
+  --ornament: rivets;
+}
+.material-blackened {
+  --surface: #131415;
+  --surface-2: #0b0c0d;
+  --surface-hi: rgba(170, 190, 220, 0.08);
+  --surface-edge: rgba(150, 170, 195, 0.1);
+  --surface-tex: var(--tex-grain);
+  --surface-tex-alpha: 0.35;
+}
+.material-brass {
+  --surface: #2e2414;
+  --surface-2: #1e170c;
+  --surface-hi: rgba(255, 214, 140, 0.16);
+  --surface-edge: rgba(214, 167, 86, 0.32);
+  --surface-tex: var(--tex-brushed);
+  --surface-tex-alpha: 0.42;
+}
+.material-leather {
+  --surface: #2a1a12;
+  --surface-2: #1b100b;
+  --surface-hi: rgba(255, 210, 170, 0.08);
+  --surface-edge: rgba(150, 100, 70, 0.3);
+  --surface-tex: var(--tex-pebble);
+  --surface-tex-blend: multiply;
+  --surface-tex-alpha: 0.75;
+}
+.material-wood {
+  --surface: #2b1c11;
+  --surface-2: #1b1109;
+  --surface-hi: rgba(255, 200, 150, 0.09);
+  --surface-edge: rgba(150, 165, 175, 0.24);
+  --surface-tex: var(--tex-grain-wood);
+  --surface-tex-blend: multiply;
+  --surface-tex-alpha: 0.9;
+}
+/* Bounty Board: tobacco-dark, stained, old, but always readable. */
+.material-paper {
+  --surface: #3a2918;
+  --surface-2: #2a1d10;
+  --surface-hi: rgba(255, 226, 170, 0.12);
+  --surface-edge: rgba(190, 150, 95, 0.32);
+  --surface-tex: var(--tex-fiber);
+  --surface-tex-blend: multiply;
+  --surface-tex-alpha: 1;
+}
+.material-glass {
+  --surface: #121a2b;
+  --surface-2: #0b1020;
+  --surface-hi: rgba(170, 200, 255, 0.14);
+  --surface-edge: color-mix(in srgb, var(--accent-hi) 34%, transparent);
+  --surface-tex: var(--tex-grain);
+  --surface-tex-alpha: 0.2;
+}
+
+/* ---- Weapon finishes for the SVG art ---- */
+.finish-blackened {
+  --metal-hi: #7a8186;
+  --metal: #2c3134;
+  --metal-lo: #0c0e0f;
+}
+.finish-steel {
+  --metal-hi: #f1f4f5;
+  --metal: #8e989c;
+  --metal-lo: #353c40;
+}
+.finish-brass {
+  --metal-hi: #ffe2a0;
+  --metal: #b98a3e;
+  --metal-lo: #4e3410;
+}
+.finish-silver {
+  --metal-hi: #ffffff;
+  --metal: #c3ccd1;
+  --metal-lo: #5f696f;
+}
+.finish-copper {
+  --metal-hi: #ffc39b;
+  --metal: #b0643a;
+  --metal-lo: #4a1f0c;
+}
+.stock-walnut {
+  --wood-hi: #9a6338;
+  --wood: #5e3a20;
+  --wood-lo: #2a170b;
+}
+.stock-ebony {
+  --wood-hi: #4a3f3b;
+  --wood: #231d1b;
+  --wood-lo: #0b0908;
+}
+.stock-weathered {
+  --wood-hi: #c9b593;
+  --wood: #8a785e;
+  --wood-lo: #4a3f31;
+}
+.stock-ivory {
+  --wood-hi: #fbf4e4;
+  --wood: #d8caa9;
+  --wood-lo: #9b8b68;
+}
+
+/* ---- Elemental Chamber colours ---- */
+.element-fire { --element: #ff7a2e; }
+.element-cold { --element: #8fd8ff; }
+.element-lightning { --element: #ffe76b; }
+.element-acid { --element: #a6f04a; }
+.element-thunder { --element: #b7a4ff; }
+.element-necrotic { --element: #6fe3a1; }
+.element-radiant { --element: #fff1b0; }
+.element-off { --element: transparent; }

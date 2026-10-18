@@ -1,6 +1,8 @@
 import { findAmmo } from "../lib/ledger";
 import type { LedgerState, Plan, Weapon } from "../lib/types";
 import { Cartridge } from "./Cartridge";
+import { CylinderMagazine } from "./Magazine";
+import "./Overlays.css";
 import { WeaponArt } from "./WeaponArt";
 
 export type LoadingSequence = {
@@ -8,9 +10,21 @@ export type LoadingSequence = {
   progress: number;
   /** Rounds in the order they are seated or withdrawn. */
   rounds: string[];
-  /** Chamber contents to show in the open revolver cylinder. */
-  chambers: Plan;
+  /** Slot each of those rounds goes into or comes out of. */
+  indices: number[];
+  /** Slot contents before the sequence (seat) or being emptied (extract). */
+  before: Plan;
 };
+
+/** What each slot holds at this point in the sequence. */
+function slotsAt(seq: LoadingSequence): Plan {
+  return seq.before.map((id, i) => {
+    const step = seq.indices.indexOf(i);
+    if (step < 0) return id;
+    if (seq.mode === "seat") return step < seq.progress ? seq.rounds[step] : null;
+    return step < seq.progress ? null : id;
+  });
+}
 
 export function LoadingOverlay({
   state,
@@ -23,62 +37,48 @@ export function LoadingOverlay({
   sequence: LoadingSequence;
   skip: () => void;
 }) {
-  const { mode, progress, rounds, chambers } = sequence;
+  const { mode, progress, rounds } = sequence;
   const total = Math.max(1, rounds.length);
   const current = findAmmo(state, rounds[Math.min(progress, rounds.length - 1)]);
+  const seating = mode === "seat";
   return (
     <div className="loading-overlay" role="status" aria-live="polite">
-      <div className="loading-card glass">
-        <span className="loading-kicker">MECHANICAL SEQUENCE</span>
-        <h2>{mode === "extract" ? "Extracting cartridges…" : "Seating cartridges…"}</h2>
-        <div className={`loader-weapon ${weapon.type} ${mode}`} key={`${mode}-${progress}`}>
+      <div className={`loading-card panel ${weapon.type} ${mode}`}>
+        <span className="eyebrow">Mechanical sequence</span>
+        <h2 className="display">{seating ? "Seating cartridges…" : "Extracting cartridges…"}</h2>
+        <div className="loader-stage">
           {weapon.type === "lever" ? (
-            <>
-              <WeaponArt weapon={weapon} />
-              <span className="loading-gate">
-                <i />
-              </span>
-              <span className="loading-round">
+            <div className="gate-view">
+              <WeaponArt weapon={weapon} className="receiver-zoom" />
+              <span className="feeding-round" key={`${mode}-${progress}`}>
                 <Cartridge ammo={current} density="all" />
               </span>
-              <span className="loader-caption">
-                {mode === "extract"
-                  ? "Gate release · cartridge withdrawn"
-                  : "Nose forward · loading gate seated"}
-              </span>
-            </>
+            </div>
           ) : (
-            <>
-              <div className="revolver-reload-frame">
-                <WeaponArt weapon={weapon} />
-                <span className="swing-arm" />
-              </div>
-              <div className="revolver-loader-cylinder">
-                <i className="ejector" />
-                {chambers.map((id, i) => {
-                  const ammo = findAmmo(state, id);
-                  return (
-                    <span className={`loader-chamber pos-${i}`} key={i}>
-                      {ammo && <Cartridge ammo={ammo} small density="all" />}
-                    </span>
-                  );
-                })}
-              </div>
-              <span className="loader-caption">
-                {mode === "extract"
-                  ? "Ejector rod pressed · chambers cleared"
-                  : "Cylinder swung out · rounds seated chamber by chamber"}
-              </span>
-            </>
+            <div className="swing-view">
+              <CylinderMagazine state={state} slots={slotsAt(sequence)} selectedSlot={-1} />
+              <span className="ejector-rod" />
+            </div>
           )}
+          <span className="loader-caption">
+            {weapon.type === "lever"
+              ? seating
+                ? "Nose forward through the loading gate"
+                : "Gate released · cartridge withdrawn"
+              : seating
+                ? "Cylinder swung out · seated chamber by chamber"
+                : "Ejector rod pressed · chambers cleared"}
+          </span>
         </div>
-        <div className="load-bar">
-          <span style={{ width: `${(progress / total) * 100}%` }} />
+        <div className="load-progress">
+          <div className="load-bar">
+            <span style={{ width: `${(progress / total) * 100}%` }} />
+          </div>
+          <p className="num">
+            {progress} / {total}
+          </p>
         </div>
-        <p>
-          {progress} / {total}
-        </p>
-        <button onClick={skip} autoFocus>
+        <button className="skip-btn" onClick={skip} autoFocus>
           Skip animation
         </button>
       </div>

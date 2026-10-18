@@ -40,6 +40,10 @@ import { useWakeLock } from "./lib/wakeLock";
 import type { Batch, DialogState, Plan, Preset, SettingsTab, View } from "./lib/types";
 import { clone, money, plural, uid } from "./lib/util";
 import { usePwaInstall } from "./pwa";
+import { flushSync } from "react-dom";
+import { Scenery } from "./components/Scenery";
+import { MotionContext } from "./components/Ticker";
+import { Icon } from "./components/ui";
 
 type Toast = { id: number; text: string; kind: string };
 
@@ -99,6 +103,13 @@ export default function App() {
   }
   const fullMotion = () => store.getState().theme.motion === "full";
   const toTop = () => window.scrollTo({ top: 0, behavior: "instant" });
+  /** Swap screens with a cross-fade where the browser supports View Transitions. */
+  function transition(update: () => void) {
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (doc.startViewTransition && fullMotion())
+      doc.startViewTransition(() => flushSync(update));
+    else update();
+  }
 
   function undo() {
     if (store.undo()) announce("Last action undone.");
@@ -118,28 +129,32 @@ export default function App() {
       return;
     }
     if (view === state.view) return;
-    passive((n) => {
-      n.view = view;
-      if (view !== "armory") n.combatMode = false;
+    transition(() => {
+      passive((n) => {
+        n.view = view;
+        if (view !== "armory") n.combatMode = false;
+      });
+      toTop();
     });
-    toTop();
   }
   function toggleCombat() {
     const s = store.getState();
-    if (s.combatMode)
-      passive((n) => {
-        n.combatMode = false;
-      });
-    else {
-      passive((n) => {
-        n.combatMode = true;
-        n.view = "armory";
-      });
-      // A separate undo step, so undoing an accidental restart resumes the old fight.
-      if (s.turn > 1 || s.reminders.length)
-        commit(startEncounter, "New encounter — turn 1.", "turn");
-    }
-    toTop();
+    transition(() => {
+      if (s.combatMode)
+        passive((n) => {
+          n.combatMode = false;
+        });
+      else {
+        passive((n) => {
+          n.combatMode = true;
+          n.view = "armory";
+        });
+        // A separate undo step, so undoing an accidental restart resumes the old fight.
+        if (s.turn > 1 || s.reminders.length)
+          commit(startEncounter, "New encounter — turn 1.", "turn");
+      }
+      toTop();
+    });
   }
   function chooseWeapon(id: string) {
     passive((n) => {
@@ -199,7 +214,7 @@ export default function App() {
         busy.current.firing = false;
         setFiring(false);
       },
-      full ? 650 : 80,
+      full ? 820 : 80,
     );
   }
   function nextTurn() {
@@ -253,9 +268,14 @@ export default function App() {
     if (shortfall(s, w, next).length)
       return announce("This load uses more ammunition than you own.", "error");
     setReload(null);
-    const seated = next.filter((id, i): id is string => !!id && id !== w.slots[i]);
+    const indices = next.flatMap((id, i) => (id && id !== w.slots[i] ? [i] : []));
     await playSequence(
-      { mode: "seat", rounds: seated.length ? seated : [selected], chambers: next },
+      {
+        mode: "seat",
+        rounds: indices.length ? indices.map((i) => next[i] as string) : [selected],
+        indices,
+        before: w.slots,
+      },
       150,
     );
     const ok = commit(
@@ -269,9 +289,12 @@ export default function App() {
   }
   async function unloadAll() {
     const w = activeWeapon(store.getState());
-    const rounds = w.slots.filter((id): id is string => !!id);
-    if (!rounds.length || busy.current.sequence) return;
-    await playSequence({ mode: "extract", rounds, chambers: w.slots }, 95);
+    const indices = w.slots.flatMap((id, i) => (id ? [i] : []));
+    if (!indices.length || busy.current.sequence) return;
+    await playSequence(
+      { mode: "extract", rounds: indices.map((i) => w.slots[i] as string), indices, before: w.slots },
+      95,
+    );
     if (commit((n) => unloadWeapon(n, w.id) > 0, `Unloaded ${w.shortName}.`, "reload")) {
       sound("reload");
       announce(`${w.shortName} unloaded.`);
@@ -468,19 +491,12 @@ export default function App() {
   });
 
   return (
+    <MotionContext.Provider value={state.theme.motion}>
     <main
       className={`ledger env-${state.theme.environment} material-${state.theme.material} motion-${state.theme.motion} density-${state.theme.density} ${state.combatMode ? "combat-mode" : ""}`}
       style={cssVars}
     >
-      <div className="environment" />
-      <div className="scene-vignette" />
-      <div className="dust" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-        <i />
-      </div>
+      <Scenery environment={state.theme.environment} />
       <div className="shell" inert={overlayOpen || undefined}>
         <Topbar
           state={state}
@@ -505,7 +521,6 @@ export default function App() {
               weapon={weapon}
               firing={firing}
               shotFx={shotFx}
-              accent={accent[0]}
               passive={passive}
               chooseWeapon={chooseWeapon}
               chooseAmmo={chooseAmmo}
@@ -593,7 +608,6 @@ export default function App() {
             firing={firing}
             density={state.theme.density}
             fire={fire}
-            accent={accent[0]}
           />
         )}
       </div>
@@ -633,8 +647,8 @@ export default function App() {
         <ThemedDialog dialog={dialog} close={() => setDialog(null)} confirm={confirmDialog} />
       )}
       {toast && (
-        <div key={toast.id} className={`toast ${toast.kind}`}>
-          <i />
+        <div key={toast.id} className={`toast ${toast.kind}`} role="status">
+          <Icon name={toast.kind === "error" ? "close" : toast.kind === "muted" ? "spark" : "check"} />
           {toast.text}
         </div>
       )}
@@ -653,5 +667,6 @@ export default function App() {
       />
       <div ref={liveRef} className="sr-only" aria-live="polite" />
     </main>
+    </MotionContext.Provider>
   );
 }

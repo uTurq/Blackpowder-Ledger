@@ -1,0 +1,357 @@
+/*
+ * Cartridge rendering. The SVG draws the round; `.round-fx` layers the
+ * animated effect on top, positioned by placement and scaled by intensity.
+ */
+.cartridge {
+  --ammo: #b8bcc0;
+  --fx-k: 0.85;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 34px;
+  height: 76px;
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.55));
+  transition:
+    transform var(--dur-2) var(--ease-spring),
+    filter var(--dur-2);
+}
+.cartridge svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+.cartridge.small {
+  width: 24px;
+  height: 54px;
+}
+.cartridge.selected {
+  filter:
+    drop-shadow(0 0 8px color-mix(in srgb, var(--ammo) 70%, transparent))
+    drop-shadow(0 4px 3px rgba(0, 0, 0, 0.6));
+}
+.cartridge.silhouette {
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.6));
+}
+.cartridge.ghost {
+  border: 1.5px dashed rgba(239, 229, 207, 0.14);
+  border-radius: 9px 9px 4px 4px;
+  filter: none;
+}
+
+/* ---- Effect layer ---- */
+.round-fx {
+  position: absolute;
+  z-index: 2;
+  left: -35%;
+  right: -35%;
+  top: -8%;
+  height: 46%;
+  pointer-events: none;
+  opacity: calc(var(--fx-intensity, 0.8) * var(--fx-k));
+}
+.round-fx::before,
+.round-fx::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.intensity-subtle {
+  --fx-k: 0.55;
+}
+.intensity-noticeable {
+  --fx-k: 0.85;
+}
+.intensity-dramatic {
+  --fx-k: 1.15;
+}
+.intensity-dramatic .round-fx {
+  scale: 1.18;
+}
+.placement-neck .round-fx {
+  top: 22%;
+  height: 30%;
+}
+.placement-case .round-fx {
+  top: 44%;
+  height: 50%;
+}
+.placement-full .round-fx {
+  top: -8%;
+  height: 112%;
+}
+.placement-trail .round-fx {
+  top: -42%;
+  height: 52%;
+}
+.placement-internal .round-fx {
+  z-index: 2;
+  top: 42%;
+  height: 50%;
+  left: 12%;
+  right: 12%;
+  mix-blend-mode: screen;
+}
+.effect-none .round-fx {
+  display: none;
+}
+
+/* Flame and embers */
+.effect-flame .round-fx::before {
+  background: radial-gradient(ellipse 34% 50% at 50% 62%, #fff6b8 0 12%, #ffa12e 34%, rgba(226, 58, 18, 0.7) 60%, transparent 76%);
+  filter: blur(1.5px);
+  transform-origin: 50% 90%;
+  animation: fx-flicker 0.7s ease-in-out infinite alternate;
+}
+.effect-flame .round-fx::after {
+  background: radial-gradient(ellipse 18% 30% at 46% 52%, #fffbe0, transparent 70%);
+  animation: fx-flicker 0.45s ease-in-out infinite alternate-reverse;
+}
+.effect-ember .round-fx::before,
+.effect-ember .round-fx::after {
+  background:
+    radial-gradient(circle at 30% 80%, #ffd27a 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 70%, #ff8a2a 0 1.6px, transparent 2.6px),
+    radial-gradient(circle at 48% 92%, #ffb04a 0 1.4px, transparent 2.4px);
+  animation: fx-rise 1.8s linear infinite;
+}
+.effect-ember .round-fx::after {
+  animation-delay: -0.9s;
+  translate: 6px 0;
+}
+
+/* Liquids and gases */
+.effect-drip .round-fx::after {
+  inset: auto 42% 0;
+  height: 9px;
+  border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+  background: var(--ammo);
+  box-shadow: 0 0 6px var(--ammo);
+  animation: fx-drip 1.6s ease-in infinite;
+}
+.effect-drip .round-fx::before {
+  inset: auto 30% 0;
+  height: 30%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--ammo) 60%, transparent), transparent 70%);
+}
+.effect-poison .round-fx::before {
+  background:
+    radial-gradient(circle at 34% 60%, rgba(124, 255, 100, 0.55), transparent 28%),
+    radial-gradient(circle at 64% 40%, rgba(124, 255, 100, 0.4), transparent 24%);
+  filter: blur(2px);
+  animation: fx-vapor 2.2s ease-in-out infinite;
+}
+.effect-poison .round-fx::after {
+  background:
+    radial-gradient(circle at 40% 72%, #d8ffc4 0 1.5px, transparent 2.4px),
+    radial-gradient(circle at 58% 82%, #b9ff96 0 1.2px, transparent 2px);
+  animation: fx-rise 2.4s linear infinite;
+}
+.effect-frost .round-fx::before {
+  background: radial-gradient(ellipse at 50% 50%, rgba(214, 242, 255, 0.55), transparent 62%);
+  filter: blur(3px);
+  animation: fx-breathe 2.6s ease-in-out infinite;
+}
+.effect-frost .round-fx::after {
+  content: "✧";
+  inset: auto;
+  top: 20%;
+  right: 22%;
+  color: #e9f8ff;
+  font-size: 9px;
+  text-shadow: -18px 22px 0 #c9ecff, 0 0 6px #8fd8ff;
+  animation: fx-glint 1.7s ease-in-out infinite;
+}
+.effect-shadow .round-fx::before {
+  background: radial-gradient(ellipse at 50% 55%, rgba(40, 14, 58, 0.85), transparent 66%);
+  filter: blur(4px);
+  animation: fx-breathe 1.9s ease-in-out infinite;
+}
+.effect-shadow .round-fx::after {
+  background: radial-gradient(ellipse 30% 40% at 40% 40%, rgba(150, 110, 210, 0.35), transparent 70%);
+  filter: blur(3px);
+  animation: fx-vapor 2.8s ease-in-out infinite reverse;
+}
+
+/* Energies */
+.effect-electric .round-fx::before {
+  background: linear-gradient(#e6f0ff, #9cc3ff);
+  clip-path: polygon(52% 0, 36% 42%, 50% 42%, 34% 100%, 64% 34%, 50% 34%, 66% 0);
+  filter: drop-shadow(0 0 4px #7aa8ff);
+  animation: fx-zap 0.9s steps(1) infinite;
+}
+.effect-electric .round-fx::after {
+  background: radial-gradient(ellipse, rgba(140, 180, 255, 0.4), transparent 60%);
+  animation: fx-zap 0.9s steps(1) infinite reverse;
+}
+.effect-energy .round-fx::before,
+.effect-runes .round-fx::before {
+  inset: 12% 22%;
+  border-radius: 50%;
+  border: 1.5px solid var(--ammo);
+  box-shadow:
+    0 0 10px var(--ammo),
+    inset 0 0 8px var(--ammo);
+  animation: fx-orbit 3.2s linear infinite;
+}
+.effect-energy .round-fx::after {
+  inset: 22% 32%;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--ammo) 80%, #fff);
+  animation: fx-orbit 2.1s linear infinite reverse;
+}
+.effect-runes .round-fx::after {
+  content: "ᚱ";
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  color: color-mix(in srgb, var(--ammo) 60%, #fff);
+  font: 11px serif;
+  text-shadow: 0 0 6px var(--ammo);
+  animation: fx-breathe 1.8s ease-in-out infinite;
+}
+.effect-radiant .round-fx::before {
+  background: radial-gradient(ellipse at 50% 45%, rgba(255, 246, 210, 0.45), transparent 60%);
+  animation: fx-breathe 2.2s ease-in-out infinite;
+}
+.effect-radiant .round-fx::after {
+  content: "✦";
+  inset: auto;
+  top: 6%;
+  right: 18%;
+  color: #fff;
+  font-size: 10px;
+  text-shadow: 0 0 8px var(--ammo), -20px 30px 0 rgba(255, 255, 255, 0.8);
+  animation: fx-glint 1.4s ease-in-out infinite;
+}
+.effect-tracer .round-fx::before {
+  left: 46%;
+  right: 46%;
+  border-radius: 3px;
+  background: linear-gradient(transparent, #fff 55%, var(--ammo));
+  box-shadow: 0 0 8px var(--ammo);
+  animation: fx-trace 1.5s ease-in-out infinite;
+}
+
+/* Animation density: the chosen round keeps its effect, others go quiet. */
+.density-focused .cartridge:not(.selected) .round-fx,
+.cartridge.density-focused:not(.selected) .round-fx {
+  opacity: 0.12;
+}
+.density-focused .cartridge:not(.selected) .round-fx::before,
+.density-focused .cartridge:not(.selected) .round-fx::after,
+.cartridge.density-focused:not(.selected) .round-fx::before,
+.cartridge.density-focused:not(.selected) .round-fx::after {
+  animation: none;
+}
+.density-minimal .round-fx,
+.cartridge.density-minimal .round-fx {
+  display: none;
+}
+
+@keyframes fx-flicker {
+  from {
+    transform: scale(0.92, 0.9);
+    opacity: 0.85;
+  }
+  to {
+    transform: scale(1.06, 1.12);
+    opacity: 1;
+  }
+}
+@keyframes fx-rise {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+@keyframes fx-drip {
+  0%,
+  30% {
+    transform: translateY(-4px) scale(0.6);
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(26px) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes fx-vapor {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(3px, -4px) scale(1.12);
+  }
+}
+@keyframes fx-breathe {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes fx-glint {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.7) rotate(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(25deg);
+  }
+}
+@keyframes fx-zap {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  70% {
+    opacity: 0;
+  }
+  71%,
+  80% {
+    opacity: 0.7;
+  }
+  81%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes fx-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fx-trace {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleY(0.6);
+    transform-origin: bottom;
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+}

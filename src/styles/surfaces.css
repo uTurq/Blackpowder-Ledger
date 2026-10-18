@@ -1,0 +1,479 @@
+/*
+ * Shared surfaces and controls: panels in the chosen material, engraved
+ * labels, plates, buttons, form fields, sliders and switches.
+ */
+
+/* ---- Panels ---- */
+.panel {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--surface-edge);
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(180deg, var(--surface-hi), transparent 38%),
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--surface) calc(var(--panel-alpha) * 100%), transparent),
+      color-mix(in srgb, var(--surface-2) calc(var(--panel-alpha) * 100%), transparent)
+    );
+  box-shadow:
+    inset 0 1px 0 var(--surface-hi),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 18px 40px rgba(0, 0, 0, 0.42),
+    0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: var(--surface-tex);
+  mix-blend-mode: var(--surface-tex-blend, overlay);
+  opacity: var(--surface-tex-alpha);
+  pointer-events: none;
+}
+.panel::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Floating chrome and dialogs must stay legible over whatever is behind them. */
+.dock,
+.main-nav,
+.modal-scrim .panel,
+.loading-card {
+  --panel-alpha: 0.97;
+}
+
+/* Metal panels are riveted at the corners. */
+.material-gunmetal .panel::after,
+.material-blackened .panel::after,
+.material-brass .panel::after {
+  inset: 9px;
+  --rivet: radial-gradient(
+    circle at 40% 35%,
+    var(--rivet-hi, #c9d2d6) 0 1px,
+    var(--rivet-mid, #59636a) 1.6px 2.6px,
+    rgba(0, 0, 0, 0.6) 3.1px,
+    transparent 3.6px
+  );
+  background:
+    var(--rivet) top left / 8px 8px no-repeat,
+    var(--rivet) top right / 8px 8px no-repeat,
+    var(--rivet) bottom left / 8px 8px no-repeat,
+    var(--rivet) bottom right / 8px 8px no-repeat;
+  opacity: 0.75;
+}
+.material-brass .panel::after {
+  --rivet-hi: #ffe0a0;
+  --rivet-mid: #8a6526;
+}
+.material-blackened .panel::after {
+  --rivet-hi: #8a9399;
+  --rivet-mid: #2a2f33;
+  opacity: 0.5;
+}
+/* Leather is saddle-stitched. */
+.material-leather .panel::after {
+  inset: 6px;
+  border: 1.5px dashed rgba(196, 150, 104, 0.42);
+  border-radius: calc(var(--r-lg) - 5px);
+}
+/* Wood gets iron corner brackets. */
+.material-wood .panel::after {
+  inset: -1px;
+  border-radius: inherit;
+  --bracket: linear-gradient(135deg, #59626a, #23282c);
+  background:
+    conic-gradient(from 90deg at 3px 3px, transparent 0 75%, #3d454b 0) top left / 22px 22px no-repeat,
+    conic-gradient(from 180deg at calc(100% - 3px) 3px, transparent 0 75%, #3d454b 0) top right / 22px 22px no-repeat,
+    conic-gradient(from 0deg at 3px calc(100% - 3px), transparent 0 75%, #3d454b 0) bottom left / 22px 22px no-repeat,
+    conic-gradient(from 270deg at calc(100% - 3px) calc(100% - 3px), transparent 0 75%, #3d454b 0) bottom right / 22px 22px no-repeat;
+  opacity: 0.8;
+}
+/* Bounty Board notices: stains and a pin at the top. */
+.material-paper .panel {
+  border-radius: 6px 9px 5px 10px;
+}
+.material-paper .panel::after {
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 50% 0, #d9cbb0 0 2px, #6e5a3c 3px, rgba(0, 0, 0, 0.5) 4.5px, transparent 5.5px) top center / 14px 14px no-repeat,
+    radial-gradient(ellipse 30% 22% at 82% 18%, rgba(18, 9, 2, 0.32), transparent 70%),
+    radial-gradient(ellipse 26% 30% at 12% 86%, rgba(18, 9, 2, 0.28), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 50%, transparent 55%, rgba(14, 7, 1, 0.45));
+}
+/* Arcane glass glows from within, and is the one see-through material. */
+.material-glass .panel {
+  backdrop-filter: blur(14px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 0 40px color-mix(in srgb, var(--accent-hi) 9%, transparent),
+    0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* A recessed well inside a panel. */
+.well {
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.22));
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Type ---- */
+.eyebrow {
+  display: block;
+  font: var(--fs-xs) / 1.2 var(--font-engrave);
+  letter-spacing: 0.14em;
+  color: var(--accent-hi);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+.muted {
+  color: var(--ink-3);
+}
+.figure {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums;
+}
+
+/* Figures stay in the UI face: IM Fell's old-style numerals read as letters. */
+.num,
+.stat > b,
+.ticker {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+/* A labelled reading, like a stamped gauge plate. */
+.stat {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.stat > span {
+  font: var(--fs-2xs) / 1 var(--font-engrave);
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+}
+.stat > b {
+  font-size: var(--fs-xl);
+  line-height: 1.15;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat > b small {
+  font-size: 0.6em;
+  color: var(--ink-3);
+}
+
+/* ---- Buttons ---- */
+.btn {
+  --btn-bg-1: rgba(255, 255, 255, 0.07);
+  --btn-bg-2: rgba(0, 0, 0, 0.22);
+  --btn-edge: var(--line-2);
+  --btn-ink: var(--ink);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--btn-edge);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, var(--btn-bg-1), var(--btn-bg-2));
+  color: var(--btn-ink);
+  font: 600 var(--fs-sm) / 1 var(--font-ui);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 2px 0 rgba(0, 0, 0, 0.55),
+    0 6px 14px rgba(0, 0, 0, 0.25);
+  transition:
+    transform var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out),
+    background var(--dur-2),
+    border-color var(--dur-2),
+    opacity var(--dur-2);
+}
+.btn:hover:not(:disabled) {
+  --btn-edge: var(--accent-line);
+  --btn-bg-1: rgba(255, 255, 255, 0.1);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 0 rgba(0, 0, 0, 0.55);
+}
+.btn:disabled {
+  opacity: 0.4;
+}
+.btn .icon {
+  width: 1.25em;
+  height: 1.25em;
+}
+/* Polished brass: the one obvious action on a screen. */
+.btn--primary {
+  --btn-bg-1: var(--accent-hi);
+  --btn-bg-2: var(--accent-lo);
+  --btn-edge: color-mix(in srgb, var(--accent-hi) 70%, #000);
+  --btn-ink: #1c1206;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 240, 210, 0.35);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 45%),
+    linear-gradient(180deg, var(--accent), var(--accent-lo));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 235, 0.55),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.25),
+    0 2px 0 rgba(0, 0, 0, 0.7),
+    0 8px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.btn--primary:hover:not(:disabled) {
+  --btn-edge: var(--accent-hi);
+  filter: brightness(1.06);
+}
+.btn--danger {
+  --btn-ink: var(--danger-ink);
+  --btn-edge: color-mix(in srgb, var(--danger) 45%, transparent);
+  --btn-bg-1: color-mix(in srgb, var(--danger) 16%, transparent);
+}
+.btn--ghost {
+  --btn-bg-1: transparent;
+  --btn-bg-2: transparent;
+  box-shadow: none;
+}
+.btn--sm {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: var(--fs-xs);
+}
+.btn--lg {
+  min-height: 54px;
+  padding: 0 22px;
+  font-size: var(--fs-md);
+}
+.btn--icon {
+  padding: 0;
+  width: 42px;
+}
+.btn--block {
+  width: 100%;
+}
+
+/* Segmented choices (filters, motion profile, density). */
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+}
+.segmented > button {
+  flex: 1 1 auto;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-2);
+  font: 600 var(--fs-sm) / 1 var(--font-ui);
+  transition:
+    background var(--dur-2),
+    color var(--dur-2),
+    border-color var(--dur-2);
+}
+.segmented > button:hover {
+  color: var(--ink);
+}
+.segmented > button[aria-pressed="true"],
+.segmented > button.active {
+  color: #1c1206;
+  border-color: color-mix(in srgb, var(--accent-hi) 60%, #000);
+  background: linear-gradient(180deg, var(--accent-hi), var(--accent));
+  box-shadow: inset 0 1px 0 rgba(255, 250, 235, 0.5);
+}
+
+/* ---- Form fields ---- */
+.field {
+  display: grid;
+  gap: 6px;
+  font: 600 var(--fs-xs) / 1.2 var(--font-ui);
+  color: var(--ink-2);
+}
+.field input:not([type="checkbox"]):not([type="range"]):not([type="color"]),
+.field select,
+.field textarea,
+.input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--ink);
+  font: 500 var(--fs-md) / 1.3 var(--font-ui);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  transition:
+    border-color var(--dur-2),
+    box-shadow var(--dur-2);
+}
+.field textarea {
+  min-height: 84px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.field select {
+  appearance: none;
+  padding-right: 34px;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--ink-3) 50%) right 17px center / 6px 6px no-repeat,
+    linear-gradient(-45deg, transparent 50%, var(--ink-3) 50%) right 12px center / 6px 6px no-repeat,
+    rgba(0, 0, 0, 0.32);
+}
+.field select option {
+  background: #16120d;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.45),
+    0 0 0 3px var(--accent-soft);
+}
+.field input[type="color"] {
+  width: 100%;
+  height: 42px;
+  padding: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.32);
+}
+
+/* Slider with a brass knob and a filled, engraved track. */
+.range {
+  --pct: 50%;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+.range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, var(--accent-lo), var(--accent)) 0 0 / var(--pct) 100% no-repeat,
+    rgba(0, 0, 0, 0.55);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.range::-moz-range-track {
+  height: 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.range::-moz-range-progress {
+  height: 6px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent-lo), var(--accent));
+}
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border: 1px solid #1c1206;
+  background: radial-gradient(circle at 35% 30%, #fff1c8, var(--accent-hi) 30%, var(--accent-lo) 80%);
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.6),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.3);
+  transition: transform var(--dur-1) var(--ease-spring);
+}
+.range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid #1c1206;
+  background: radial-gradient(circle at 35% 30%, #fff1c8, var(--accent-hi) 30%, var(--accent-lo) 80%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+.range:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+/* Toggle: a brass lever in an engraved slot. */
+.switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 30px;
+}
+.switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+.switch i {
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: background var(--dur-2);
+}
+.switch i::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d8d2c4, #7b7466 70%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  transition:
+    transform var(--dur-2) var(--ease-spring),
+    background var(--dur-2);
+}
+.switch input:checked + i {
+  background: color-mix(in srgb, var(--accent) 38%, rgba(0, 0, 0, 0.5));
+}
+.switch input:checked + i::after {
+  transform: translateX(22px);
+  background: radial-gradient(circle at 35% 30%, #fff1c8, var(--accent-hi) 35%, var(--accent-lo) 85%);
+}
+.switch input:focus-visible + i {
+  outline: 2px solid var(--accent-hi);
+  outline-offset: 3px;
+}

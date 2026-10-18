@@ -1,0 +1,307 @@
+/*
+ * Firearm choreography. One `.firing` class drives every part; each part's
+ * keyframes are laid out on the same timeline (--fire-dur):
+ *   0–8%   hammer falls, flash, recoil kick
+ *   8–45%  smoke blooms, gun settles
+ *   45–85% lever cycles and throws brass (rifle) / cylinder indexes (revolver)
+ */
+.weapon-art {
+  --fire-dur: 820ms;
+  --flash: #ffd36a;
+  --flash-edge: #ff6a1f;
+  position: relative;
+  width: 100%;
+  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.55));
+}
+.weapon-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.weapon-svg * {
+  transform-box: view-box;
+}
+.engraving-mark {
+  font: 9px var(--font-engrave);
+  fill: var(--metal-hi);
+  fill-opacity: 0.55;
+}
+
+/* Parts at rest */
+.weapon-svg .flash,
+.weapon-svg .smoke .puff,
+.weapon-svg .tracer,
+.weapon-svg .casing {
+  opacity: 0;
+}
+.weapon-svg .tracer {
+  stroke: #fff6d8;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 160 1400;
+  stroke-dashoffset: 160;
+}
+.weapon-svg .flash {
+  transform-origin: 0 0;
+}
+.lever-rifle-hint {
+  display: none;
+}
+
+/* Elemental Chamber: a living glow along the barrel. */
+.weapon-svg .element-glow {
+  stroke: var(--element);
+  stroke-width: 18;
+  stroke-linecap: round;
+  opacity: 0;
+}
+.weapon-art:not(.element-off) .element-glow {
+  opacity: 0.7;
+  animation: element-shimmer 1.8s ease-in-out infinite alternate;
+}
+.weapon-art:not(.element-off) {
+  --flash: color-mix(in srgb, var(--element) 70%, #fff);
+  --flash-edge: var(--element);
+}
+
+/* ---- The firing cycle ---- */
+.weapon-art.firing .recoil {
+  animation: recoil var(--fire-dur) var(--ease-out);
+}
+.weapon-art.revolver.firing .recoil {
+  animation-name: recoil-rise;
+}
+.weapon-art.firing .hammer {
+  animation: hammer-fall var(--fire-dur) linear;
+}
+.weapon-art.firing .flash {
+  animation: muzzle-flash var(--fire-dur) linear;
+}
+.weapon-art.firing .puff {
+  animation: smoke var(--fire-dur) var(--ease-out) forwards;
+}
+.weapon-art.firing .puff.p2 {
+  animation-delay: 40ms;
+}
+.weapon-art.firing .puff.p3 {
+  animation-delay: 90ms;
+}
+.weapon-art.lever.firing .lever {
+  animation: lever-cycle var(--fire-dur) var(--ease-in-out);
+}
+.weapon-art.lever.firing .bolt {
+  animation: bolt-cycle var(--fire-dur) var(--ease-in-out);
+}
+.weapon-art.lever.firing .casing {
+  animation: eject var(--fire-dur) linear;
+}
+.weapon-art.revolver.firing .flutes {
+  animation: cylinder-index var(--fire-dur) var(--ease-in-out);
+}
+
+/* Pivot points, in the SVG's own coordinates. */
+.lever.weapon-art .hammer,
+.weapon-art.lever .hammer {
+  transform-origin: 716px 108px;
+}
+.weapon-art.revolver .hammer {
+  transform-origin: 703px 102px;
+}
+.weapon-art .lever {
+  transform-origin: 640px 165px;
+}
+.weapon-art.lever .recoil {
+  transform-origin: 960px 170px;
+}
+.weapon-art.revolver .recoil {
+  transform-origin: 760px 220px;
+}
+.weapon-art .casing {
+  transform: translate(660px, 92px);
+}
+
+/* Round-specific shots */
+.shot-tracer .tracer,
+.shot-fmj .tracer {
+  animation: tracer var(--fire-dur) var(--ease-out);
+}
+.weapon-art.shot-flame,
+.weapon-art.shot-ember {
+  --flash: #ffc24a;
+  --flash-edge: #ff4d12;
+}
+.weapon-art.shot-frost {
+  --flash: #e8f8ff;
+  --flash-edge: #6fc8ff;
+}
+.weapon-art.shot-poison,
+.weapon-art.shot-drip {
+  --flash: #e4ffc4;
+  --flash-edge: #5fd14a;
+}
+.weapon-art.shot-electric,
+.weapon-art.shot-energy {
+  --flash: #fffbd0;
+  --flash-edge: #7aa8ff;
+}
+.weapon-art.shot-shadow {
+  --flash: #c9b6ff;
+  --flash-edge: #3a1f5c;
+}
+.weapon-art.shot-radiant,
+.weapon-art.shot-runes {
+  --flash: #ffffff;
+  --flash-edge: #ffe58a;
+}
+
+@keyframes recoil {
+  0%,
+  3% {
+    transform: none;
+  }
+  10% {
+    transform: translateX(18px) rotate(-1.2deg);
+  }
+  45%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes recoil-rise {
+  0%,
+  3% {
+    transform: none;
+  }
+  11% {
+    transform: translateX(10px) rotate(-7deg);
+  }
+  50%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes hammer-fall {
+  0% {
+    transform: none;
+  }
+  5%,
+  48% {
+    transform: rotate(-34deg);
+  }
+  78%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes muzzle-flash {
+  0%,
+  3% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  7% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  18% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  26%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes smoke {
+  0%,
+  6% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-90px, -46px) scale(2.4);
+  }
+}
+@keyframes lever-cycle {
+  0%,
+  45% {
+    transform: none;
+  }
+  62% {
+    transform: rotate(42deg);
+  }
+  85%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes bolt-cycle {
+  0%,
+  45% {
+    transform: none;
+  }
+  62% {
+    transform: translateX(26px);
+  }
+  85%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes eject {
+  0%,
+  54% {
+    opacity: 0;
+    transform: translate(660px, 92px) rotate(0);
+  }
+  58% {
+    opacity: 1;
+    transform: translate(668px, 78px) rotate(-40deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(800px, -40px) rotate(-560deg);
+  }
+}
+@keyframes cylinder-index {
+  0%,
+  48% {
+    transform: none;
+  }
+  78%,
+  100% {
+    transform: translateY(23px);
+  }
+}
+@keyframes tracer {
+  0%,
+  4% {
+    opacity: 0;
+    stroke-dashoffset: 160;
+  }
+  6% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.9;
+    stroke-dashoffset: -1100;
+  }
+  41%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -1100;
+  }
+}
+@keyframes element-shimmer {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
