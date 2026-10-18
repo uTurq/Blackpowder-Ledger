@@ -5347,3 +5347,180 @@ textarea:focus-visible {
     bottom: 0;
   }
 }
+
+/* ===== Field usability: phones, tablets and touch ===== */
+/* The activity log shrinks to a corner button wherever the fire tab owns the bottom edge
+   (phones get a top-bar button instead). */
+.history-top {
+  display: none;
+}
+.history-peek.compact {
+  left: 18px;
+  bottom: 18px;
+  transform: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+.history-peek.compact > :not(.ui-icon) {
+  display: none;
+}
+@media (hover: none) {
+  /* Keyboard hints mean nothing on a touchscreen. */
+  .combat-shortcuts {
+    display: none;
+  }
+}
+@media (max-width: 1100px) {
+  /* Turn, Next Turn and live effects change every round: put them first. */
+  .combat-mode .armory-layout > .combat-side {
+    order: -1;
+  }
+}
+@media (max-width: 760px) {
+  .history-peek.compact {
+    display: none;
+  }
+  .history-top {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .brand {
+    padding-right: 196px;
+  }
+  .undo-top .ui-icon {
+    display: inline;
+  }
+
+  /* Combat: a compact turn bar above the weapon instead of a tall panel below it. */
+  .combat-side .panel-head.compact {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding: 12px 14px;
+  }
+  .combat-side .panel-head.compact > div {
+    text-align: left;
+  }
+  .combat-side .panel-head h2 {
+    font-size: 22px;
+    margin: 0;
+  }
+  .combat-side .combat-telemetry {
+    padding: 0 12px 12px;
+  }
+  .combat-side .combat-gauge {
+    display: none;
+  }
+  .combat-side .effect-tray {
+    margin-top: 0;
+  }
+  .combat-side .empty-effects {
+    padding: 8px;
+  }
+  .combat-side .empty-effects .ui-icon {
+    display: none;
+  }
+  .combat-mode .weapon-panel .panel-head p {
+    display: none;
+  }
+  .combat-mode .weapon-panel .panel-head h1 {
+    font-size: 20px;
+  }
+  .dock-round {
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 6px;
+  }
+  .dock-round .cartridge {
+    display: grid;
+  }
+  .dock-round b {
+    font-size: 11px;
+  }
+
+  /* Reload: keep the magazine in view while picking rounds, Load always reachable. */
+  .reload-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  .reload-plan {
+    display: contents;
+  }
+  .reload-plan > * {
+    margin-inline: 12px;
+  }
+  .reload-plan > .plan-stage {
+    order: -1;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    min-height: 0;
+    margin: 0 0 4px;
+    border-radius: 0 0 10px 10px;
+    border-top: 0;
+    box-shadow: 0 10px 24px #000c;
+  }
+  .reload-plan > .plan-stage .reload-tube {
+    margin-top: 26px;
+  }
+  .reload-plan > .plan-stage .reload-cylinder {
+    transform: scale(0.62);
+    margin: -42px auto -46px;
+  }
+  .reload-plan > .selected-load-type,
+  .reload-plan > .preset-strip,
+  .reload-plan > .plan-summary {
+    order: 1;
+  }
+  .reload-plan > .commit-load {
+    order: 2;
+    position: sticky;
+    bottom: 10px;
+    z-index: 3;
+    margin: 10px 12px;
+    width: auto;
+    box-shadow: 0 -8px 24px #000b;
+  }
+
+  /* Workshop: the batch total and Craft button ride along at the bottom. */
+  .batch-panel:not(.empty) {
+    position: sticky;
+    bottom: 52px;
+    z-index: 20;
+    padding: 10px 12px;
+    box-shadow: 0 -10px 30px #000c;
+  }
+  .batch-panel > .eyebrow,
+  .batch-panel > h2,
+  .batch-panel > .batch-lines {
+    display: none;
+  }
+  .batch-panel .batch-total {
+    padding: 0 0 8px;
+  }
+  .batch-panel .batch-tools {
+    margin-top: 6px;
+  }
+
+  /* Settings: every section visible at once instead of a hidden sideways scroller. */
+  .settings-sidebar nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    overflow: visible;
+  }
+  .settings-sidebar nav button {
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+  }
+  .settings-sidebar nav button b {
+    display: none;
+  }
+}

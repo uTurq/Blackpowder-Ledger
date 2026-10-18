@@ -33,6 +33,21 @@ describe("armory", () => {
     expect(loadedText()).toBe("7 / 11");
   });
 
+  it("starts a fresh encounter each time Combat Mode is entered", () => {
+    start("off");
+    const toggle = () => fireEvent.click(document.querySelector(".combat-switch")!);
+    toggle();
+    fireEvent.click(screen.getByRole("button", { name: /Next Turn/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Next Turn/ }));
+    expect(screen.getByText("Turn 3")).toBeTruthy();
+    toggle();
+    toggle();
+    expect(screen.getByText("Turn 1")).toBeTruthy();
+    // Starting over is undoable in case Combat Mode was toggled by accident.
+    press("z", { ctrlKey: true });
+    expect(document.querySelector(".combat-side h2")!.textContent).toBe("Turn 3");
+  });
+
   it("cycles Tactical Selection from the combat dock", () => {
     start("off", true);
     const dock = document.querySelector(".dock-round") as HTMLElement;
@@ -45,7 +60,7 @@ describe("armory", () => {
 describe("keyboard shortcuts", () => {
   it("do not fire or reload behind an open dialog", async () => {
     start("off", true);
-    fireEvent.click(screen.getByRole("button", { name: /Open activity history/ }));
+    fireEvent.click(document.querySelector(".history-peek")!);
     expect(screen.getByRole("dialog", { name: "Activity history" })).toBeTruthy();
     press(" ");
     press("r");

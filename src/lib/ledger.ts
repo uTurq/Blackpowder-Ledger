@@ -134,6 +134,15 @@ export function fireRound(draft: LedgerState, weaponId: string, ammoId: string) 
   return ammo;
 }
 
+/** Enter Combat Mode for a new fight: round 1, no leftover reminders. */
+export function startEncounter(draft: LedgerState) {
+  draft.combatMode = true;
+  draft.view = "armory";
+  draft.turn = 1;
+  draft.reminders = [];
+  draft.roller.last = null;
+}
+
 export function advanceTurn(draft: LedgerState) {
   draft.turn += 1;
   draft.reminders = draft.reminders

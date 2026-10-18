@@ -97,7 +97,7 @@ export function Workshop({
           })}
         </div>
       </section>
-      <aside className="panel glass batch-panel">
+      <aside className={`panel glass batch-panel ${count ? "" : "empty"}`}>
         <span className="eyebrow">CRAFTING LEDGER</span>
         <h2>Current batch</h2>
         <div className="batch-lines">

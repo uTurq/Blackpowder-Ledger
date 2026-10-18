@@ -18,6 +18,7 @@ import {
   presetShortfall,
   rollAttack,
   sanitizeBatch,
+  startEncounter,
   unloadWeapon,
 } from "../src/lib/ledger";
 import type { LedgerState } from "../src/lib/types";
@@ -100,6 +101,18 @@ describe("firing and Tactical Selection", () => {
     advanceTurn(s);
     expect(s.turn).toBe(2);
     expect(s.reminders).toHaveLength(0);
+  });
+
+  it("starts each encounter at turn 1 without the last fight's reminders", () => {
+    const s = createDefaultState();
+    fireRound(s, "lever", "explosive");
+    advanceTurn(s);
+    advanceTurn(s);
+    fireRound(s, "lever", "fmj");
+    s.reminders.push({ id: "x", label: "Old", detail: "", turns: null, color: "#fff" });
+    s.view = "settings";
+    startEncounter(s);
+    expect(s).toMatchObject({ combatMode: true, view: "armory", turn: 1, reminders: [] });
   });
 });
 

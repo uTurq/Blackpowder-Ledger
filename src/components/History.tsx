@@ -2,9 +2,22 @@ import type { Activity } from "../lib/types";
 import { timeAgo } from "../lib/util";
 import { Icon, Modal } from "./ui";
 
-export function HistoryPeek({ latest, open }: { latest?: Activity; open: () => void }) {
+export function HistoryPeek({
+  latest,
+  compact,
+  open,
+}: {
+  latest?: Activity;
+  /** Shrinks to an icon so it clears the Armory's fire tab. */
+  compact: boolean;
+  open: () => void;
+}) {
   return (
-    <button className="history-peek" onClick={open} aria-label="Open activity history">
+    <button
+      className={`history-peek ${compact ? "compact" : ""}`}
+      onClick={open}
+      aria-label="Open activity history"
+    >
       <Icon name="history" />
       <span>{latest?.text}</span>
       <small>{latest ? timeAgo(latest.time) : ""}</small>

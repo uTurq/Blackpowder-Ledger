@@ -12,6 +12,7 @@ export function Topbar({
   rename,
   editGold,
   toggleCombat,
+  openHistory,
 }: {
   state: LedgerState;
   weapon: Weapon;
@@ -20,6 +21,7 @@ export function Topbar({
   rename: (name: string) => void;
   editGold: () => void;
   toggleCombat: () => void;
+  openHistory: () => void;
 }) {
   const selectedAmmo = findAmmo(state, state.selectedAmmoId);
   const totalLoaded = state.weapons.reduce((n, w) => n + loadedCount(w.slots), 0);
@@ -78,6 +80,10 @@ export function Topbar({
         )}
       </div>
       <div className="top-actions">
+        {/* Phones only: the bottom activity bar gives way to the fire controls there. */}
+        <button className="quiet-icon history-top" onClick={openHistory} aria-label="Open activity history">
+          <Icon name="history" />
+        </button>
         <button
           className="quiet-icon undo-top"
           onClick={undo}

@@ -30,11 +30,13 @@ import {
   rollAttack,
   sanitizePlan,
   shortfall,
+  startEncounter,
   unloadWeapon,
 } from "./lib/ledger";
 import { parseSaveFile } from "./lib/migrate";
 import { playSound, type SoundKind } from "./lib/sound";
 import { useLedgerStore } from "./lib/store";
+import { useWakeLock } from "./lib/wakeLock";
 import type { Batch, DialogState, Plan, Preset, SettingsTab, View } from "./lib/types";
 import { clone, money, plural, uid } from "./lib/util";
 import { usePwaInstall } from "./pwa";
@@ -45,6 +47,8 @@ export default function App() {
   const { store, state, canUndo } = useLedgerStore();
   const { commit, passive } = store;
   const pwa = usePwaInstall();
+  // Keep a phone or tablet from dimming mid-fight.
+  useWakeLock(state.combatMode);
 
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("appearance");
   const [reload, setReload] = useState<{ plan: Plan; selected: string } | null>(null);
@@ -94,6 +98,7 @@ export default function App() {
     if (store.getState().sound) playSound(kind);
   }
   const fullMotion = () => store.getState().theme.motion === "full";
+  const toTop = () => window.scrollTo({ top: 0, behavior: "instant" });
 
   function undo() {
     if (store.undo()) announce("Last action undone.");
@@ -112,10 +117,29 @@ export default function App() {
       });
       return;
     }
+    if (view === state.view) return;
     passive((n) => {
       n.view = view;
       if (view !== "armory") n.combatMode = false;
     });
+    toTop();
+  }
+  function toggleCombat() {
+    const s = store.getState();
+    if (s.combatMode)
+      passive((n) => {
+        n.combatMode = false;
+      });
+    else {
+      passive((n) => {
+        n.combatMode = true;
+        n.view = "armory";
+      });
+      // A separate undo step, so undoing an accidental restart resumes the old fight.
+      if (s.turn > 1 || s.reminders.length)
+        commit(startEncounter, "New encounter — turn 1.", "turn");
+    }
+    toTop();
   }
   function chooseWeapon(id: string) {
     passive((n) => {
@@ -152,6 +176,7 @@ export default function App() {
     setFiring(true);
     setShotFx(ammo.visual.fx);
     sound("shot");
+    if (s.theme.motion !== "off") navigator.vibrate?.(18);
     const full = fullMotion();
     setTimeout(
       () => {
@@ -376,6 +401,7 @@ export default function App() {
           n.view = (id as View) || "armory";
           n.combatMode = false;
         });
+        toTop();
         break;
       case "reset":
         store.replace(createDefaultState(), "Ledger reset to factory defaults.");
@@ -467,12 +493,8 @@ export default function App() {
             })
           }
           editGold={() => setGoldOpen(true)}
-          toggleCombat={() =>
-            passive((n) => {
-              n.combatMode = !n.combatMode;
-              n.view = "armory";
-            })
-          }
+          toggleCombat={toggleCombat}
+          openHistory={() => setHistoryOpen(true)}
         />
         {!state.combatMode && <MainNav view={state.view} go={switchView} />}
 
@@ -576,7 +598,11 @@ export default function App() {
         )}
       </div>
 
-      <HistoryPeek latest={state.activity[0]} open={() => setHistoryOpen(true)} />
+      <HistoryPeek
+        latest={state.activity[0]}
+        compact={!state.combatMode && state.view === "armory"}
+        open={() => setHistoryOpen(true)}
+      />
       {historyOpen && (
         <HistoryDrawer entries={state.activity} close={() => setHistoryOpen(false)} />
       )}
