@@ -1,6 +1,7 @@
-# Blackpowder Ledger — Claude Code Handoff
+# Blackpowder Ledger — working notes
 
-This is the complete source snapshot for the live Blackpowder Ledger PWA at commit `a36ea9486638160205f43e88694a1833631f3a0b`.
+Blackpowder Ledger is a client-only React 19 + TypeScript PWA built with Vite
+and deployed to GitHub Pages by `.github/workflows/ci.yml`.
 
 ## Product direction
 
@@ -17,46 +18,32 @@ Important established decisions:
 - Armory state autosaves locally and must migrate legacy v3/v4 data.
 - The app remains installable and usable offline as a PWA.
 
-## Local setup
-
-Requirements: Node.js 22.13 or newer. The included helper scripts are designed for Linux/WSL.
+## Commands
 
 ```bash
 npm ci
-npm run dev
-```
-
-Open the local URL printed by Vite. For a production verification:
-
-```bash
-npm test
-```
-
-Useful individual commands:
-
-```bash
-npm run build
-npm run lint
-npm run validate:artifact
+npm run dev      # Vite dev server (no service worker in dev)
+npm run check    # eslint + tsc + vitest — run before committing
+npm run build    # tsc + production build into dist/ (also writes dist/sw.js)
+npm run preview  # serve dist/ to test the PWA and offline mode
 ```
 
 ## Architecture map
 
-- `app/page.tsx` — application state, save migration, armory, workshop, presets, settings, combat logic, reload/fire behavior, dialogs, and most UI rendering.
-- `app/cartridge.tsx` — reusable cartridge design system and renderer: families, projectile shapes, materials, bands, markings, effects, placement, intensity, and presets.
-- `app/globals.css` — complete visual system, responsive layouts, themes, weapon/reload/fire animations, and accessibility states.
-- `app/pwa.ts` — service-worker registration and install-prompt behavior.
-- `app/manifest.ts` — installable-app metadata.
-- `public/sw.js` — offline application-shell and runtime asset caching.
-- `public/blackpowder-icon-*` — installed-app icons.
-- `tests/rendered-html.test.mjs` — regression checks for rendered content and required source/PWA features.
-- `.openai/hosting.json` — existing ChatGPT Sites project identity. It contains no credential, but do not replace its `project_id` when updating the same hosted Site.
+- `src/lib/ledger.ts` — all armory rules as pure functions over a state draft: ammo accounting on load/unload/fire, Tactical Selection fallback, presets, crafting, reminders. Put new rules here and test them in `tests/ledger.test.ts`.
+- `src/lib/store.ts` — the single state store. `commit(recipe, label, kind)` is undoable and logged; `passive(recipe)` is for preferences/navigation. Recipes mutate a fresh clone and may return `false` to abort. Always read the latest state via the store (`store.getState()`) inside timers or async flows, never a render-time copy.
+- `src/lib/migrate.ts` — `normalize()` turns any v3/v4/v5 save or exported file into a valid state; `loadSavedState()` / `saveState()` wrap localStorage.
+- `src/App.tsx` — layout, overlays, fire/reload/unload sequences, keyboard shortcuts.
+- `src/components/` — one file per screen or dialog. `Cartridge.tsx` is the cartridge design system (families, projectiles, materials, bands, markings, effects); `ui.tsx` holds shared controls including the focus-trapping `Modal`.
+- `src/styles/globals.css` — complete visual system, themes, weapon/reload/fire animations, accessibility states. Class names in components are load-bearing for this file.
+- `pwa/` — service-worker template and the Vite plugin that injects the precache list and a content-hash cache version at build time (no manual cache bumps).
+- `public/manifest.webmanifest` — install metadata; URLs are relative so the app works under `/<repo>/` on GitHub Pages.
 
 ## Persistence
 
-Primary state is stored in browser `localStorage` under `blackpowder-ledger-v5`. The loader also checks `blackpowder-ledger-v4` and `blackpowder-ledger-v3` and normalizes legacy cartridge/weapon data. The last crafting batch uses `blackpowder-last-batch`.
+Primary state lives in `localStorage` under `blackpowder-ledger-v5`. The loader falls back to `blackpowder-ledger-v4` and `blackpowder-ledger-v3`, and copies an unreadable save to `blackpowder-ledger-unreadable-backup` before autosave can overwrite it. The last crafting batch uses `blackpowder-last-batch`.
 
-Do not rename or discard these keys without adding a migration. Export/import remains the portable backup mechanism; there is no server database dependency during ordinary play.
+Do not rename or discard these keys without adding a migration. When changing state shape, bump `version`, extend `normalize()`, and add a migration test. Export/import is the portable backup and the way to move saves between sites.
 
 ## Safe change checklist
 
@@ -71,10 +58,4 @@ When changing weapon behavior, test the lever-action and revolver independently:
 - rifle lever cycle, feed, and casing ejection;
 - Tactical Selection persistence and fallback.
 
-When changing state shape, increment/handle the version and preserve v3/v4/v5 migration. When changing the PWA shell or generated asset URLs, bump the cache version in `public/sw.js` and verify a previously installed copy updates.
-
-## Source and generated files
-
-Edit authored files, not generated output. Do not commit `node_modules`, `dist`, `.next`, `.wrangler`, `.sites-runtime`, `outputs`, or `work`.
-
-The original README documents the Vinext/Cloudflare Sites toolchain. The application itself is React 19 + TypeScript, built through Vite/Vinext and packaged for a Cloudflare Worker deployment.
+Keyboard shortcuts must stay inactive while any dialog or the loading sequence is open, and must never swallow browser shortcuts (only Ctrl/⌘+Z is handled).
